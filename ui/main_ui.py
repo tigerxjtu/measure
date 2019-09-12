@@ -9,8 +9,8 @@ from common import *
 from abc import ABCMeta, abstractmethod
 import cv2
 import sys
-from ui.feature_export import FeatureTan
-from ui.outline_export import OutlineTransformer,OutlineTan
+from feature_export import FeatureTan
+from outline_export import OutlineTransformer,OutlineTan
 # from ui.dialog import Ui_Dialog
 
 measure_items_front=['F脖子上L','F脖子上R',
