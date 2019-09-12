@@ -6,6 +6,7 @@ import os
 
 path1=r'data\txtdata'
 path2=r'data\pics'
+path3=r'data\result'
 
 #获取文件名的ID含义部分
 def get_name(file_name):

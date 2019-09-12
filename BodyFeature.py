@@ -1,5 +1,6 @@
 
 from BodyClient import body_client
+from ui.main import Body,FrontBody,SideBody
 
 
 class BodyFeature(object):
@@ -25,3 +26,9 @@ class BodyFeature(object):
 
     def side_height(self):
         return self.side_rect[3]
+
+    def save(self):
+        pass
+
+    def load(self):
+        pass

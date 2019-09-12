@@ -16,6 +16,11 @@ def distance(p1,p2):
     x2,y2=p2
     return np.sqrt((x2-x1)**2+(y2-y1)**2)
 
+def angle(p1,p2):
+    x1, y1 = p1
+    x2, y2 = p2
+    return -(y2-y1)/(x2-x1)
+
 def is_one_line(left_point,right_point,cur_point):
     left_x, left_y = left_point
     right_x, right_y = right_point
@@ -24,8 +29,21 @@ def is_one_line(left_point,right_point,cur_point):
         return cur_x==left_x
     dx=right_x-left_x
     dy=right_y-left_y
-    y_pos=(cur_x-left_x)*dy/dx+left_y
+    y_pos=y_pos=int(round((cur_x-left_x)*dy/dx+left_y,0))
     return cur_y==int(y_pos)
+
+# (x,y)
+def min_point(points):
+    point = min(points,key=lambda x:x[1])
+    return point
+
+def cut_by_y(y,outline):
+    y=int(round(y,0))
+    points = filter(lambda x: x[1] == y, outline)
+    points = list(points)
+    left = min(points,key=lambda x:x[0])
+    right = max(points,key=lambda x:x[0])
+    return left,right
 
 if __name__ == '__main__':
     p1=(0,2)
