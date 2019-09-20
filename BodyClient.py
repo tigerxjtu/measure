@@ -50,7 +50,7 @@ class BodyClient(object):
             raise NoBodyException()
         person=para['person_info'][0]
         score = person['location']['score']
-        if score < 0.9:
+        if score < 0.5:
             raise NoBodyException()
         loc = person['location']
         x_left = int(loc['left'])

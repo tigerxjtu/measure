@@ -7,36 +7,17 @@ from PyQt5.QtGui import QPainter, QColor, QPalette, QBrush, QPen
 from PyQt5 import QtGui
 from common import *
 from train_data import *
+from abc import ABCMeta, abstractmethod
 import cv2
 import sys
 from ui.feature_export import FeatureTan
 from ui.outline_export import OutlineTransformer,OutlineTan
-# from ui.dialog import Ui_Dialog
 from BodyFeature import min_angle_feature,min_feature
-from model.Neck3sideModel import Neck3sideModel
+from model.NeckModel import NeckModel
 from ui.Body import Body,FrontBody,SideBody,BackBody
 from analysis.neck_data import build_user_info
 from model.ShoulderModel import ShoulderModel
-from model.Hip3sideModel import Hip3sideModel
-
-measure_items_front=['F脖子上L','F脖子上R',
-               'F脖子下L','F脖子下R',
-               'F左肩','F右肩',
-               'F左手腕L', 'F左手腕R',
-               'F右手腕L', 'F右手腕R',
-               'F脚底L', 'F脚底R',
-               'F胸部L', 'F胸部R',
-               'F腰部L', 'F腰部R',
-               'F臀部L', 'F臀部R']
-
-measure_items_side=['S脖子上L','S脖子上R',
-                    'S脖子下L','S脖子下R',
-                    'S胸部L','S胸部R',
-                    'S腰部L','S腰部R',
-                    'S臀部L','S臀部R']
-
 user_info = build_user_info()
-# print(user_info)
 
 orig_size = (1080,1440)
 dst_size = (540,720)
@@ -55,11 +36,11 @@ class BodyFrame(QFrame):
         self.body_id = body_id
         if self.tag == 'F':
             self.body = FrontBody(self.body_id)
-        elif self.tag == 'B':
+        elif self.tag == 'S':
             self.body = SideBody(self.body_id)
         else:
             self.body = BackBody(self.body_id)
-        self.body.process_img()
+        self.body.process_display_img()
         img = self.body.get_result_img()
         img = cv2.resize(img,dst_size)
         # img = img[:,:,::-1]
@@ -219,41 +200,87 @@ class BodyFrame(QFrame):
             cent_y=(self.start_point.y()+self.end_point.y())//2
             painter.drawLine(cent_x,cent_y,cent_x,0)
 
-        pt_pen = QPen(Qt.blue, 3, Qt.SolidLine)
-        painter.setPen(pt_pen)
-        for point in self.body.features.values():
-            x,y=point
-            upper_left=QPoint(int(x*ratio-2),int(y*ratio-2))
-            down_right=QPoint(int(x*ratio+2),int(y*ratio+2))
-            painter.drawEllipse(QRect(upper_left,down_right))
-        if self.body.top_head_point:
-            x, y = self.body.top_head_point
-            upper_left = QPoint(int(x * ratio - 2), int(y * ratio - 2))
-            down_right = QPoint(int(x * ratio + 2), int(y * ratio + 2))
-            painter.drawEllipse(QRect(upper_left, down_right))
-        if self.body.left_finger:
-            x, y = self.body.left_finger
-            upper_left = QPoint(int(x * ratio - 2), int(y * ratio - 2))
-            down_right = QPoint(int(x * ratio + 2), int(y * ratio + 2))
-            painter.drawEllipse(QRect(upper_left, down_right))
-        if self.body.left_finger:
-            x, y = self.body.right_finger
-            upper_left = QPoint(int(x * ratio - 2), int(y * ratio - 2))
-            down_right = QPoint(int(x * ratio + 2), int(y * ratio + 2))
-            painter.drawEllipse(QRect(upper_left, down_right))
-        if self.body.huiyin_point:
-            x, y = self.body.huiyin_point
-            upper_left = QPoint(int(x * ratio - 2), int(y * ratio - 2))
-            down_right = QPoint(int(x * ratio + 2), int(y * ratio + 2))
-            painter.drawEllipse(QRect(upper_left, down_right))
+        # pt_pen = QPen(Qt.blue, 3, Qt.SolidLine)
+        # painter.setPen(pt_pen)
+        # for point in self.body.features.values():
+        #     x,y=point
+        #     upper_left=QPoint(int(x*ratio-2),int(y*ratio-2))
+        #     down_right=QPoint(int(x*ratio+2),int(y*ratio+2))
+        #     painter.drawEllipse(QRect(upper_left,down_right))
+        # if self.body.top_head_point:
+        #     x, y = self.body.top_head_point
+        #     upper_left = QPoint(int(x * ratio - 2), int(y * ratio - 2))
+        #     down_right = QPoint(int(x * ratio + 2), int(y * ratio + 2))
+        #     painter.drawEllipse(QRect(upper_left, down_right))
+        # if self.body.left_finger:
+        #     x, y = self.body.left_finger
+        #     upper_left = QPoint(int(x * ratio - 2), int(y * ratio - 2))
+        #     down_right = QPoint(int(x * ratio + 2), int(y * ratio + 2))
+        #     painter.drawEllipse(QRect(upper_left, down_right))
+        # if self.body.left_finger:
+        #     x, y = self.body.right_finger
+        #     upper_left = QPoint(int(x * ratio - 2), int(y * ratio - 2))
+        #     down_right = QPoint(int(x * ratio + 2), int(y * ratio + 2))
+        #     painter.drawEllipse(QRect(upper_left, down_right))
+        # if self.body.huiyin_point:
+        #     x, y = self.body.huiyin_point
+        #     upper_left = QPoint(int(x * ratio - 2), int(y * ratio - 2))
+        #     down_right = QPoint(int(x * ratio + 2), int(y * ratio + 2))
+        #     painter.drawEllipse(QRect(upper_left, down_right))
+        #
+        # pt_pen = QPen(Qt.green, 3, Qt.SolidLine)
+        # painter.setPen(pt_pen)
+        # for pt in self.body.other_points:
+        #     x, y = pt
+        #     upper_left = QPoint(int(x * ratio - 2), int(y * ratio - 2))
+        #     down_right = QPoint(int(x * ratio + 2), int(y * ratio + 2))
+        #     painter.drawEllipse(QRect(upper_left, down_right))
 
-        pt_pen = QPen(Qt.green, 3, Qt.SolidLine)
+        # pt_pen = QPen(Qt.green, 3, Qt.SolidLine)
+        # painter.setPen(pt_pen)
+        # for pt in self.body.featureXY.values():
+        #     x, y = pt
+        #     upper_left = QPoint(int(x * ratio - 2), int(y * ratio - 2))
+        #     down_right = QPoint(int(x * ratio + 2), int(y * ratio + 2))
+        #     painter.drawEllipse(QRect(upper_left, down_right))
+
+        # keys = self.body.bdfeatureXY.keys()
+        keys = ['left_hip','left_shoulder']
+        pt_pen = QPen(Qt.red, 3, Qt.SolidLine)
         painter.setPen(pt_pen)
-        for pt in self.body.other_points:
+        # for pt in self.body.bdfeatureXY.values():
+        for key in keys:
+            if key not in self.body.bdfeatureXY:
+                continue
+            pt = self.body.bdfeatureXY[key]
             x, y = pt
             upper_left = QPoint(int(x * ratio - 2), int(y * ratio - 2))
             down_right = QPoint(int(x * ratio + 2), int(y * ratio + 2))
             painter.drawEllipse(QRect(upper_left, down_right))
+
+        keys = ['right_hip', 'right_shoulder']
+        pt_pen = QPen(Qt.yellow, 3, Qt.SolidLine)
+        painter.setPen(pt_pen)
+        # for pt in self.body.bdfeatureXY.values():
+        for key in keys:
+            if key not in self.body.bdfeatureXY:
+                continue
+            pt = self.body.bdfeatureXY[key]
+            x, y = pt
+            upper_left = QPoint(int(x * ratio - 2), int(y * ratio - 2))
+            down_right = QPoint(int(x * ratio + 2), int(y * ratio + 2))
+            painter.drawEllipse(QRect(upper_left, down_right))
+
+        pt_pen = QPen(Qt.cyan, 3, Qt.SolidLine)
+        painter.setPen(pt_pen)
+        for key,pt in self.body.auto_features.items():
+            # print(key)
+            if pt:
+                # print(key,pt)
+                x, y = pt
+                upper_left = QPoint(int(x * ratio - 2), int(y * ratio - 2))
+                down_right = QPoint(int(x * ratio + 2), int(y * ratio + 2))
+                painter.drawEllipse(QRect(upper_left, down_right))
 
         min_x, max_x, center_x, foot_y, bottom_y =self.body.get_cord_pos()
         if foot_y:
@@ -279,7 +306,7 @@ class MyDialog(QDialog):
         # self.name_edit = QLineEdit()  # 用于接收用户输入的单行文本输入框
         self.bodies = QtWidgets.QComboBox(self)  # 建立一个下拉列表框
         self.bodies.resize(250,250)
-        # print(names)
+
         for i,name in enumerate(names):  # 为下拉列表框添加选择项（从数据库中查询取得）
             self.bodies.addItem(str(i+1)+'--'+name, name)
 
@@ -295,11 +322,7 @@ class MyDialog(QDialog):
         self.setLayout(self.glayout)
 
     def get_data(self,index=0):
-        idx = self.bodies.currentIndex()
-        if idx >=0:
-            # print('body_id:',self.bodies.itemData(idx))
-            return self.bodies.itemData(idx)
-        return self.bodies.itemData(0)
+        return self.bodies.itemData(self.bodies.currentIndex())
 
 
 class MainUI(QMainWindow):
@@ -352,57 +375,30 @@ class MainUI(QMainWindow):
         self.btn_next.setObjectName("btn_next")
         self.btn_next.setText('下一条')
 
-        self.btn_compute = QtWidgets.QPushButton(self)
-        self.btn_compute.setGeometry(QRect(1120, 740, 100, 30))
-        self.btn_compute.setObjectName("btn_compute")
-        self.btn_compute.setText('计算')
-
-        self.lbl1 = QtWidgets.QLabel(self)
-        self.lbl1.setGeometry(QRect(1120, 10, 40, 30))
-        # self.lbl1.setObjectName("lbl_neck")
-        self.lbl1.setText('颈围:')
-        self.lbl_neck = QtWidgets.QLabel(self)
-        self.lbl_neck.setGeometry(QRect(1170, 10, 40, 30))
-        # self.lbl_neck.setObjectName("lbl_neck")
-        # self.lbl_neck.setText('')
-        self.edit_neck = QtWidgets.QLineEdit(self)
-        self.edit_neck.setGeometry(QRect(1120, 45, 100, 30))
-
-        self.lbl2 = QtWidgets.QLabel(self)
-        self.lbl2.setGeometry(QRect(1120, 100, 40, 30))
-        self.lbl2.setText('肩宽:')
-        self.lbl_shoulder = QtWidgets.QLabel(self)
-        self.lbl_shoulder.setGeometry(QRect(1170, 100, 40, 30))
-
-        self.edit_shoulder = QtWidgets.QLineEdit(self)
-        self.edit_shoulder.setGeometry(QRect(1120, 135, 100, 30))
-
-        self.lbl3 = QtWidgets.QLabel(self)
-        self.lbl3.setGeometry(QRect(1120, 190, 40, 30))
-        self.lbl3.setText('胸围:')
-        self.lbl_xiong = QtWidgets.QLabel(self)
-        self.lbl_xiong.setGeometry(QRect(1170, 190, 40, 30))
-
-        self.edit_xiong = QtWidgets.QLineEdit(self)
-        self.edit_xiong.setGeometry(QRect(1120, 225, 100, 30))
-
-        self.lbl4 = QtWidgets.QLabel(self)
-        self.lbl4.setGeometry(QRect(1120, 280, 40, 30))
-        self.lbl4.setText('腰围:')
-        self.lbl_yao = QtWidgets.QLabel(self)
-        self.lbl_yao.setGeometry(QRect(1170, 280, 40, 30))
-
-        self.edit_yao = QtWidgets.QLineEdit(self)
-        self.edit_yao.setGeometry(QRect(1120, 315, 100, 30))
-
-        self.lbl5 = QtWidgets.QLabel(self)
-        self.lbl5.setGeometry(QRect(1120, 370, 40, 30))
-        self.lbl5.setText('臀围:')
-        self.lbl_tun = QtWidgets.QLabel(self)
-        self.lbl_tun.setGeometry(QRect(1170, 370, 40, 30))
-
-        self.edit_tun = QtWidgets.QLineEdit(self)
-        self.edit_tun.setGeometry(QRect(1120, 405, 100, 30))
+        # self.btn_compute = QtWidgets.QPushButton(self)
+        # self.btn_compute.setGeometry(QRect(1120, 740, 100, 30))
+        # self.btn_compute.setObjectName("btn_compute")
+        # self.btn_compute.setText('计算')
+        #
+        # self.lbl1 = QtWidgets.QLabel(self)
+        # self.lbl1.setGeometry(QRect(1120, 10, 40, 30))
+        # # self.lbl1.setObjectName("lbl_neck")
+        # self.lbl1.setText('颈围:')
+        # self.lbl_neck = QtWidgets.QLabel(self)
+        # self.lbl_neck.setGeometry(QRect(1170, 10, 40, 30))
+        # # self.lbl_neck.setObjectName("lbl_neck")
+        # # self.lbl_neck.setText('')
+        # self.edit_neck = QtWidgets.QLineEdit(self)
+        # self.edit_neck.setGeometry(QRect(1120, 45, 100, 30))
+        #
+        # self.lbl2 = QtWidgets.QLabel(self)
+        # self.lbl2.setGeometry(QRect(1120, 100, 40, 30))
+        # self.lbl2.setText('肩宽:')
+        # self.lbl_shoulder = QtWidgets.QLabel(self)
+        # self.lbl_shoulder.setGeometry(QRect(1170, 100, 40, 30))
+        #
+        # self.edit_shoulder = QtWidgets.QLineEdit(self)
+        # self.edit_shoulder.setGeometry(QRect(1120, 135, 100, 30))
 
         self.pushButton.clicked.connect(self.show_dialog)
         self.pushButton_2.clicked.connect(self.save_features)
@@ -410,16 +406,14 @@ class MainUI(QMainWindow):
         self.pushButton_4.clicked.connect(self.display_other_features)
         self.btn_prev.clicked.connect(self.prev_body)
         self.btn_next.clicked.connect(self.next_body)
-        self.btn_compute.clicked.connect(self.compute)
+        # self.btn_compute.clicked.connect(self.compute)
 
 
         self.create_dialog()
-        if not self.body_id:
-            self.body_id = names[0]
-            # print(names)
+
         self.set_body(self.body_id)
 
-        self.resize(1280,820)
+        self.resize(1680,820)
         self.center()
         self.setWindowTitle('Body')
 
@@ -433,6 +427,7 @@ class MainUI(QMainWindow):
         self.lineEdit.setText(body_id)
         self.fbody.set_body(body_id)
         self.sbody.set_body(body_id)
+        self.bbody.set_body(body_id)
 
     def init_body_frame(self):
         self.fbody = BodyFrame(self)
@@ -445,8 +440,13 @@ class MainUI(QMainWindow):
         self.sbody.create_side_menu()
         self.sbody.setGeometry(QRect(570, 10, 540, 720))
 
+        self.bbody = BodyFrame(self, 'B')
+        # self.sbody.create_side_menu()
+        self.bbody.setGeometry(QRect(1120, 10, 540, 720))
+
         self.fbody.msg2Statusbar[str].connect(self.statusbar.showMessage)
         self.sbody.msg2Statusbar[str].connect(self.statusbar.showMessage)
+        self.bbody.msg2Statusbar[str].connect(self.statusbar.showMessage)
 
     def create_dialog(self):
         # self.dialog = QDialog(self)
@@ -458,9 +458,6 @@ class MainUI(QMainWindow):
         #     self.d.comboBox.addItem(name,name)
         self.dialog=MyDialog()
         self.body_id=self.dialog.get_data()
-        # print(self.body_id)
-        if not self.body_id:
-            self.body_id = names[0]
 
 
     def show_dialog(self):
@@ -502,8 +499,7 @@ class MainUI(QMainWindow):
         try:
             ud = user_info[self.body_id]
             height = ud['height']
-            # model = NeckModel(self.body_id,height)
-            model = Neck3sideModel(self.body_id,height)
+            model = NeckModel(self.body_id,height)
             neck = model.predict()
             self.edit_neck.setText(str(round(neck,2)))
             self.lbl_neck.setText(str(ud['neck']))
@@ -512,14 +508,6 @@ class MainUI(QMainWindow):
             shoulder = model.predict()
             self.edit_shoulder.setText(str(round(shoulder, 2)))
             self.lbl_shoulder.setText(str(ud['shoulder']))
-
-            model = Hip3sideModel(self.body_id,height)
-            tun = model.predict()
-            self.edit_tun.setText(str(round(tun, 2)))
-
-            self.lbl_xiong.setText(str(ud['xiong']))
-            self.lbl_yao.setText(str(ud['yao']))
-            self.lbl_tun.setText(str(ud['tun']))
         except Exception as e:
             print(e)
             QMessageBox.information(self, 'error',str(e))

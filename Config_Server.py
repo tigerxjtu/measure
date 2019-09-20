@@ -4,14 +4,14 @@ class Config(object):
 
     def __init__(self):
         self.httpInfo = 'http://47.100.216.92/admin/app/index.html'
-        self.model_path = r'C:\projects\python\measure\ui\data'
-        self.pic_dir = r'C:\tmp\pics'
-        self.txt_dir = r'C:\tmp\txtdata'
-        self.result_dir = r'C:\projects\python\measure\ui\data\result'
+        self.model_path = r'/data/post'
+        self.pic_dir = r'/data/wwwroot/public/uploads'
+        self.txt_dir = r'/data/wwwroot/txtdata'
+        self.result_dir = r'/data/post/result'
         self.db_host = '127.0.0.1'
-        self.db_name = 'cms'
-        self.db_user = 'root'
-        self.db_passwd = 'pass'
+        self.db_name = 'nonecms'
+        self.db_user = 'aosoft'
+        self.db_passwd = 'zc_-zmJj2QdhTX423#_!'
 
         self.train_mode = True
         # self.read()

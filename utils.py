@@ -1,10 +1,10 @@
 import numpy as np
 
-def get_file_content(self, filePath):
+def get_file_content(filePath):
     with open(filePath, 'rb') as fp:
         return fp.read()
 
-def expand_rect(self, x, y, w, h, max_w, max_h, ratio=0.05):
+def expand_rect( x, y, w, h, max_w, max_h, ratio=0.05):
     left = int(max(x - ratio * w, 0))
     top = int(max(y - ratio * h, 0))
     width = int(min((1 + 2 * ratio) * w, max_w - left))

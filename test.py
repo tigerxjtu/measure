@@ -28,3 +28,12 @@
 a=[1,2,3,4]
 for i,ele in enumerate(a[1:]):
     print(i,ele)
+
+items = ['a','b','c','d']
+
+import numpy as np
+a = np.array([1,2,3])
+b = np.array([4,5,6])
+print(zip(a,b))
+for i,j in zip(a,b):
+    print(i,j)
