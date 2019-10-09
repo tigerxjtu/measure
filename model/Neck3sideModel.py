@@ -10,7 +10,7 @@ from sklearn.preprocessing import PolynomialFeatures
 
 class Neck3sideModel(LinearModel):
 
-    model_file = 'neck_3side.model'
+    model_file = 'neck_3side_linear.model'
     mean_value = 40
     model = None
 
@@ -63,18 +63,28 @@ class Neck3sideModel(LinearModel):
 
     def predict(self):
         x=self.x_data()
+        # print(x)
+        # print(powx(*x))
         input = np.array(x)
         input=input.reshape((1,-1))
-        pf = PolynomialFeatures(degree=2)
+        # pf = PolynomialFeatures(degree=2)
         # print(input)
         model = self.get_model()
+
+        # print(model.coef_)
+        # print(model.intercept_)
         # print(model.coef_,model.intercept_)
         # print(dir(model))
-        result = model.predict(pf.fit_transform(input))[0]
+        # print(pf.fit_transform(input))
+        # result = model.predict(pf.fit_transform(input))[0]
+        result = model.predict(input)[0]
         # print(result)
         return float(result)+Neck3sideModel.mean_value
 
+# def powx(x1,x2,x3):
+#     return [x1**2,x2**2,x3**2,x1*x2,x1*x3,x2*x3]
+
 if __name__ == '__main__':
-    neck_model = Neck3sideModel('U1002217190901092403591',176)
+    neck_model = Neck3sideModel('U1002295190920221708564',176)
     # print(distance([513, 476],[552, 453]))
     print(neck_model.predict())

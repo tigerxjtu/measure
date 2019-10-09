@@ -31,6 +31,7 @@ class BodyFrame(QFrame):
         self.resize(dst_size[0],dst_size[1])
         self.start_point,self.end_point=None,None
         self.tag = tag
+        self.op_menu = None
 
     def set_body(self, body_id):
         self.body_id = body_id
@@ -119,37 +120,40 @@ class BodyFrame(QFrame):
         return (pt1[0]+pt2[0])//2, (pt1[1]+pt2[1])//2
 
     def contextMenuEvent(self, e):
-        if not self.body:
-            return
-        if not self.op_menu:
-            self.msg2Statusbar.emit('context menu not created!')
-            return
-        if not self.start_point and not self.end_point:
-            self.msg2Statusbar.emit('请先完成标定')
-            return
-        action = self.op_menu.exec_(self.mapToGlobal(e.pos()))
-        if action == self.act_clear:
-            self.clear_line()
+        try:
+            if not self.body:
+                return
+            if not self.op_menu:
+                self.msg2Statusbar.emit('context menu not created!')
+                return
+            if not self.start_point and not self.end_point:
+                self.msg2Statusbar.emit('请先完成标定')
+                return
+            action = self.op_menu.exec_(self.mapToGlobal(e.pos()))
+            if action == self.act_clear:
+                self.clear_line()
+                self.releaseKeyboard()
+                return
+            if action == self.f_foot:
+                cent_x,cent_y=self.get_center_point()
+                if not self.body.set_foot_point(cent_x,cent_y):
+                    QMessageBox.information(self, 'title', '足底标定有误')
+                self.clear_line()
+                self.releaseKeyboard()
+                return
+            if action == self.f_bottom:
+                cent_x, cent_y = self.get_center_point()
+                if not self.body.set_bottom_point(cent_y):
+                    QMessageBox.information(self, 'title', '请先完成足底标定')
+                self.clear_line()
+                self.releaseKeyboard()
+                return
+            # QMessageBox.information(self,'title',action.text())
+            if action:
+                self.cut_points(action.text())
             self.releaseKeyboard()
-            return
-        if action == self.f_foot:
-            cent_x,cent_y=self.get_center_point()
-            if not self.body.set_foot_point(cent_x,cent_y):
-                QMessageBox.information(self, 'title', '足底标定有误')
-            self.clear_line()
-            self.releaseKeyboard()
-            return
-        if action == self.f_bottom:
-            cent_x, cent_y = self.get_center_point()
-            if not self.body.set_bottom_point(cent_y):
-                QMessageBox.information(self, 'title', '请先完成足底标定')
-            self.clear_line()
-            self.releaseKeyboard()
-            return
-        # QMessageBox.information(self,'title',action.text())
-        if action:
-            self.cut_points(action.text())
-        self.releaseKeyboard()
+        except Exception as e:
+            print(e)
 
 
     def mousePressEvent(self, event):
@@ -375,6 +379,11 @@ class MainUI(QMainWindow):
         self.btn_next.setObjectName("btn_next")
         self.btn_next.setText('下一条')
 
+        self.btn_test = QtWidgets.QPushButton(self)
+        self.btn_test.setGeometry(QRect(1120, 740, 100, 30))
+        self.btn_test.setObjectName("btn_test")
+        self.btn_test.setText('测试')
+
         # self.btn_compute = QtWidgets.QPushButton(self)
         # self.btn_compute.setGeometry(QRect(1120, 740, 100, 30))
         # self.btn_compute.setObjectName("btn_compute")
@@ -407,6 +416,7 @@ class MainUI(QMainWindow):
         self.btn_prev.clicked.connect(self.prev_body)
         self.btn_next.clicked.connect(self.next_body)
         # self.btn_compute.clicked.connect(self.compute)
+        self.btn_test.clicked.connect(self.test_click)
 
 
         self.create_dialog()
@@ -494,6 +504,14 @@ class MainUI(QMainWindow):
         cur_id = (cur_id+1)%length
         self.set_body(names[cur_id])
 
+    def test_click(self):
+        if self.sbody.start_point and self.sbody.end_point:
+            x1,y1 = int(self.sbody.start_point.x() / ratio), int(self.sbody.start_point.y() / ratio)
+            x2,y2 = int(self.sbody.end_point.x() / ratio), int(self.sbody.end_point.y() / ratio)
+            y = int((y1+y2)/2)
+            y_up,y_down,_=self.sbody.body.get_main_range()
+            r = (y-y_up)/(y_down-y)
+            self.statusbar.showMessage('%d,%d,%d---%f'%(y_up,y,y_down,r))
 
     def compute(self):
         try:

@@ -10,7 +10,7 @@ from sklearn.preprocessing import PolynomialFeatures
 
 class Hip3sideModel(LinearModel):
 
-    model_file = 'hip_3side_linear.model'
+    model_file = 'hip_3side.model'
     mean_value = 97
     model = None
 
@@ -66,14 +66,13 @@ class Hip3sideModel(LinearModel):
         input = np.array(x)
         # print(input)
         input=input.reshape((1,-1))
-        # pf = PolynomialFeatures(degree=2)
+        pf = PolynomialFeatures(degree=2)
         # print(input)
         model = self.get_model()
         # print(model.coef_,model.intercept_)
         # print(dir(model))
-        # result = model.predict(pf.fit_transform(input))[0]
+        result = model.predict(pf.fit_transform(input))[0]
         # print(result)
-        result = model.predict(input)[0]
         return float(result)+Hip3sideModel.mean_value
 
 if __name__ == '__main__':

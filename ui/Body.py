@@ -4,7 +4,8 @@ from common import *
 # from train_data import get_file_name
 from file_name import get_file_name
 # from db_client import get_file_name
-from BodyFeature import min_angle_feature,min_feature,min_distance_angle,round_int,min_y_pt
+from BodyFeature import min_angle_feature,min_feature,min_distance_angle,round_int,min_y_pt,get_outline_distribute
+from utils import x_inersect_y
 
 # bd_path = r'C:\projects\python\measure\ui\data\bd'
 measure_mapping={'F脖子上':'f_neck_up',
@@ -82,6 +83,45 @@ class Body(object):
     def load_file(self):
         pass
 
+    def get_main_range(self):
+        left, right = self.bdfeatureXY['left_hip'], self.bdfeatureXY['right_hip']
+        y_down = round_int((left[1] + right[1]) / 2)
+        x0 = round_int((left[0] + right[0]) / 2)
+        if self.tag == 'F' or self.tag == 'B':
+            left,right =self.auto_features['ye_L'],self.auto_features['ye_R']
+            y_up = int(max(left[1],right[1]))
+        else:
+            left,right = self.bdfeatureXY['left_shoulder'],self.bdfeatureXY['right_shoulder']
+            y_up = int(min(left[1],right[1]))
+        return y_up,y_down,x0
+
+    def get_main_range2(self):
+        left, right = self.bdfeatureXY['left_hip'], self.bdfeatureXY['right_hip']
+        y_down = round_int((left[1] + right[1]) / 2)
+
+        left,right = self.bdfeatureXY['left_shoulder'],self.bdfeatureXY['right_shoulder']
+        x0 = round_int((left[0] + right[0]) / 2)
+        y_up = round_int((left[1] + right[1]) / 2)
+        return y_up,y_down,x0
+
+
+    def get_main_distances(self):
+        y_up, y_down, x0 = self.get_main_range()
+        distances = get_outline_distribute(self.outline,y_up,y_down,x0)
+        if self.tag =='S':
+            return distances
+        left, right = self.auto_features['shoulder_L'], self.auto_features['shoulder_R']
+        y_start = max(left[1],right[1])
+        x0 = round_int((left[0] + right[0]) / 2)
+        bot_left,bot_right = self.cut_by_y(y_up,x0)
+        up_distances = [x_inersect_y(right,bot_right,y)-x_inersect_y(left,bot_left,y) for y in range(y_start,y_up)]
+        return up_distances+distances
+
+    def get_main_distances2(self):
+        distances = self.get_main_distances()
+        split_index = int(len(distances)/2)
+        return distances[:split_index],distances[split_index:]
+
     def clear_other_points(self):
         self.other_points.clear()
 
@@ -121,6 +161,39 @@ class Body(object):
             out_file =os.path.join(path1,'%s%s1.json' % (self.body_id, self.tag))
         with open(out_file, 'r') as fp:
             self.bdfeatureXY = json.load(fp)
+
+    def load_export_features(self):
+        self.bottom_y = self._max_y
+        self.foot_y = self.bottom_y - 110
+        auto_features = self.calculate_features()
+        # print(auto_features.keys())
+    # ['neck_L', 'neck_R', 'shoulder_L', 'shoulder_R', 'ye_L', 'ye_R', 'tun_L', 'tun_R', 'huiyin', 'xiong_L',
+    #            'xiong_R', 'yao_L', 'yao_R']
+    # ['neck_L', 'neck_R', 'tun_L', 'tun_R', 'xiong_L', 'xiong_R', 'yao_L', 'yao_R']
+        if self.tag=='F':
+            y_neck_up = auto_features['neck_R'][1] - 8
+            y_neck_down = auto_features['neck_R'][1] + 8
+            x0_neck =  (auto_features['neck_L'][0] + auto_features['neck_R'][0])//2
+            self.features['f_neck_up_L'],self.features['f_neck_up_R'] = self.cut_by_y(y_neck_up,x0_neck)
+            self.features['f_neck_down_L'], self.features['f_neck_down_R'] = self.cut_by_y(y_neck_down, x0_neck)
+            self.huiyin_point = auto_features['huiyin']
+            self.center_x = self.huiyin_point[0]
+            self.features['f_shoulder_L'],self.features['f_shoulder_R']=auto_features['shoulder_L'],auto_features['shoulder_R']
+            self.features['f_yewo_L'], self.features['f_yewo_R'] = auto_features['ye_L'], auto_features['ye_R']
+            # f_wrist_left_L,f_wrist_right_R
+            y_left,y_right = self.left_finger[1]-90, self.right_finger[1]-90
+            self.features['f_wrist_left_L'],_ = self.cut_by_y_out(y_left)
+            _,self.features['f_wrist_right_R'] = self.cut_by_y_out(y_right)
+
+
+        if self.tag=='S':
+            self.center_x = (self._min_x+self._max_x)//2
+            self.features['s_yao_L'],self.features['s_yao_R']=auto_features['yao_L'],auto_features['yao_R']
+            self.features['s_tun_L'], self.features['s_tun_R'] = auto_features['tun_L'], auto_features['tun_R']
+            self.features['s_neck_up_L'],self.features['s_neck_up_R'] = auto_features['neck_L'], auto_features['neck_R']
+            self.features['s_xiong_L'],self.features['s_xiong_R'] = auto_features['xiong_L'], auto_features['xiong_R']
+
+
 
     def load_feature(self):
         file_path=os.path.join(path3,'%s%s.json'%(self.body_id,self.tag))
@@ -186,7 +259,30 @@ class Body(object):
                 features['huiyin']=min_y_pt(self.outline, x1,x2, features['tun_R'][1])
             except Exception as e:
                 print(e)
-
+        #xiong
+        r=0.25
+        y_up, y_down, x0 = self.get_main_range2()  # shoulder, hip
+        y = int((y_up + r * y_down) / (1 + r))
+        if self.tag == 'S':
+            features['xiong_L'],features['xiong_R'] = self.cut_by_y(y, x0)
+        else:
+            try:
+                left, right = features['shoulder_L'], features['shoulder_R']
+                bot_left, bot_right = features['ye_L'],features['ye_R']
+                if y<bot_left[1]:
+                    features['xiong_L'] = (x_inersect_y(left,bot_left,y),y)
+                else:
+                    features['xiong_L'] = self.cut_by_y(y, x0)[0]
+                if y<bot_right[1]:
+                    features['xiong_R'] = (x_inersect_y(right, bot_right, y),y)
+                else:
+                    features['xiong_R'] = self.cut_by_y(y, x0)[1]
+            except Exception as e:
+                print(e)
+        #yao
+        r=2.8
+        y = int((y_up + r * y_down) / (1 + r))
+        features['yao_L'],features['yao_R'] = self.cut_by_y(y, x0)
 
         self.auto_features = features
         # print(features)
@@ -238,10 +334,30 @@ class Body(object):
         x0 = round_int((left[0] + right[0]) / 2)
         return self.cut_by_y(y0,x0)
 
+    #0.25 (shoulder, xiong, hip)
+    # def process_xiong_feature(self, r=0.25):
+    #     y_up,y_down,x0 = self.get_main_range2() #shoulder, hip
+    #     y = int((y_up+r*y_down)/(1+r))
+    #     if self.tag == 'S':
+    #         return self.cut_by_y(y,x0)
+    #
+    #     left, right = self.auto_features['shoulder_L'], self.auto_features['shoulder_R']
+    #     y_start = max(left[1], right[1])
+    #     x0 = round_int((left[0] + right[0]) / 2)
+    #     bot_left, bot_right = self.cut_by_y(y_up, x0)
+
 
 
     def get_result_img(self):
         return self.img
+
+    def cut_by_y_out(self,y):
+        points = filter(lambda x: x[1] == y, self.outline)
+        points = list(points)
+        left = min(points, key=lambda x: x[0])
+        right = max(points, key=lambda x: x[0])
+        return left, right
+
 
     def cut_by_y(self, y, x0=None):
         points = filter(lambda x: x[1]==y, self.outline)

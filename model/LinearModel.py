@@ -2,6 +2,8 @@
 from sklearn.linear_model import LinearRegression
 from sklearn.externals import joblib
 from ui.Body import FrontBody,SideBody,BackBody
+import os
+from ui.feature_export import FeatureTan
 
 class LinearModel(object):
 
@@ -50,4 +52,17 @@ class LinearModel(object):
         body.load_outline()
         body.load_pre_feature()
         return body
+
+if __name__ == '__main__':
+    l_model = LinearModel()
+    body_id = 'U1002217190901092403591'
+    fbody = l_model.get_body(body_id, 'F')
+    sbody = l_model.get_body(body_id, 'S')
+    fbody.load_export_features()
+    sbody.load_export_features()
+    exporter = FeatureTan(fbody, sbody)
+    # sbody.features['f_neck_up_L'],_=exporter.map_front2side_feature('f_neck_up_L')
+    file_path = '%s_FL.txt' % (body_id)
+    exporter.write_file(file_path)
+
 

@@ -3,13 +3,21 @@ import json
 class Config(object):
 
     def __init__(self):
-        self.httpInfo = 'http://47.100.216.92/admin/app/index.html'
+        # self.httpInfo = 'http://47.100.216.92/admin/app/index.html'
+        # self.httpInfo = 'http://47.100.216.92/'
+        self.httpInfo = 'http://127.0.0.1:9090/'
+        # self.download_base_pic_url = 'http://47.100.216.92/uploads'
+        # self.download_base_tan_url = 'http://47.100.216.92/tan'
+        self.download_base_pic_url = 'http://127.0.0.1/uploads'
+        self.download_base_tan_url = 'http://127.0.0.1/tan'
+
         self.model_path = r'C:\projects\python\measure\ui\data'
         self.pic_dir = r'C:\tmp\pics'
         self.txt_dir = r'C:\tmp\txtdata'
+        self.tan_dir = r'C:\tmp\tan'
         self.result_dir = r'C:\projects\python\measure\ui\data\result'
         self.db_host = '127.0.0.1'
-        self.db_name = 'cms'
+        self.db_name = 'body1002'
         self.db_user = 'root'
         self.db_passwd = 'pass'
 
@@ -20,9 +28,13 @@ class Config(object):
     def build_dict(self):
         conf = {}
         conf['httpInfo']= self.httpInfo
+        conf['download_base_pic_url'] = self.download_base_pic_url
+        conf['download_base_tan_url'] = self.download_base_tan_url
+
         conf['model_path'] = self.model_path
         conf['pic_dir'] = self.pic_dir
         conf['txt_dir'] = self.txt_dir
+        conf['tan_dir'] = self.tan_dir
         conf['result_dir'] = self.result_dir
 
         conf['db_user']=self.db_user
@@ -38,9 +50,14 @@ class Config(object):
             with open(file_path, 'r') as f:
                 conf = json.loads(f.read())
                 self.httpInfo = conf['httpInfo']
+                self.download_base_pic_url = conf['download_base_pic_url']
+                self.download_base_tan_url = conf['download_base_tan_url']
+
                 self.model_path = conf['model_path']
                 self.pic_dir = conf['pic_dir']
                 self.txt_dir = conf['txt_dir']
+                self.tan_dir = conf['tan_dir']
+
                 self.result_dir = conf['result_dir']
 
                 self.db_user = conf['db_user']

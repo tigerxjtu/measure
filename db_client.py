@@ -12,7 +12,7 @@ class DB_Client(object):
         self.db_passwd = config.db_passwd
 
         self.db_conn = None
-        print(self.db_name,self.db_user,self.db_passwd,self.host)
+        # print(self.db_name,self.db_user,self.db_passwd,self.host)
 
 
     def get_connection(self):
@@ -49,11 +49,28 @@ class DB_Client(object):
         return None
 
     def process_result(self, id, data):
-        sql = 'update none_body_feature_data set BFD08=%(neck)s, BH11=%(shoulder)s, BFD13=%(tun)s where id=%(id)s'
+        sql = 'update none_body_feature_data set BFD08=%(neck)s, BH11=%(shoulder)s, BFD13=%(tun)s, BFD11=%(xiong)s, BFD12=%(yao)s where id=%(id)s'
         with self.get_connection().cursor() as cursor:
             data['id']=id
             cursor.execute(sql,data)
             self._del_queue(id)
+        self.db_conn.commit()
+
+    def insert_outline_queue(self, id, bbiid, folder, body_id, status):
+        sql = 'insert into none_outline_queue values(%(id)s, %(bbiid)s, %(folder)s, %(body_id)s, %(status)s)'
+        data = {'id':id, 'bbiid':bbiid, 'folder':folder, 'body_id':body_id, 'status': status}
+        with self.get_connection().cursor() as cursor:
+            data['id']=id
+            cursor.execute(sql,data)
+        self.db_conn.commit()
+
+    def delete_outline_queue(self, id):
+        sql1 = 'insert ignore into none_outline_queue_log select * from  none_outline_queue where id=%(id)s'
+        sql2 = 'delete from none_outline_queue where id = %(id)s'
+        with self.get_connection().cursor() as cursor:
+            key = {'id': id}
+            cursor.execute(sql1, key)
+            cursor.execute(sql2, key)
         self.db_conn.commit()
 
     def _del_queue(self, id):
@@ -69,13 +86,33 @@ class DB_Client(object):
         self.db_conn.commit()
 
     def get_user_info(self, person_id):
-        sql = 'SELECT id,bbi03 height, bbi04 weight FROM none_body_baseinfo WHERE id = %(id)s'
+        sql = 'SELECT id,bbi03 height, bbi04 weight, bbi02 name FROM none_body_baseinfo WHERE id = %(id)s'
         with self.get_connection().cursor() as cursor:
             cursor.execute(sql, {'id':person_id})
             for row in cursor:
                 return row['height'],row['weight']
         return None
 
+    def get_outline_queue(self):
+        sql = '''select a.id, a.bbiid, a.folder, a.body_id, a.status, b.bbi03 height, b.bbi04 weight, b.bbi02 name 
+        from none_outline_queue a, none_body_baseinfo b where a.bbiid=b.id limit 1'''
+        with self.get_connection().cursor() as cursor:
+            cursor.execute(sql)
+            result ={'has_record': False, 'data':{}}
+            for row in cursor:
+                result['has_record']= True
+                row['weight'] = float(row['weight'])
+                result['data']=row
+            return result
+
+    def del_outline_queue(self, id):
+        sql1 = 'insert ignore into none_outline_queue_log select * from  none_outline_queue where id=%(id)s'
+        sql2 = 'delete from none_outline_queue where id = %(id)s'
+        with self.get_connection().cursor() as cursor:
+            key = {'id': id}
+            cursor.execute(sql1, key)
+            cursor.execute(sql2, key)
+        self.db_conn.commit()
 
     #
     #

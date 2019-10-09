@@ -83,6 +83,17 @@ S胸R:{}
             if right:
                 self.side_body.add_other_points(right)
 
+    def map_front2side_feature(self,feature):
+        f_height = self.front_body.bottom_y - self.front_body.top_head_point[1]
+        s_height = self.side_body.bottom_y - self.side_body.top_head_point[1]
+        s_ratio = f_height / s_height
+        f_ratio = s_height / f_height
+        f_pf = PtTransformer(self.front_body.center_x, self.front_body.bottom_y)
+        s_pf = PtTransformer(self.side_body.center_x, self.side_body.bottom_y)
+        f_y = f_pf.transorm_y(self.front_body.features[feature][1]) * f_ratio
+        s_y = int(round(s_pf.reverse_transform_y(f_y), 0))
+        left, right = self.side_body.cut_by_y(s_y)
+        return left,right
 
     def write_file(self, file_path):
         # file_name = '%s_FL.txt'%self.front_body.body_id
@@ -125,7 +136,9 @@ S胸R:{}
         self.data.append(s_pf.transform_str(*left))
 
         self.data.append(angle(self.side_body.features['s_neck_up_L'],self.side_body.features['s_neck_up_R']))#脖子角度
-        self.data.append(distance(self.front_body.features['f_shoulder_L'],self.front_body.features['f_wrist_left_L']))#左臂长L
+        # self.data.append(distance(self.front_body.features['f_shoulder_L'],self.front_body.features['f_wrist_left_L']))#左臂长L
+        # self.data.append(distance(self.front_body.features['f_shoulder_R'], self.front_body.features['f_wrist_right_R']))#右臂长R
+        self.data.append(distance(self.front_body.features['f_shoulder_L'], self.front_body.features['f_wrist_left_L']))  # 左臂长L
         self.data.append(distance(self.front_body.features['f_shoulder_R'], self.front_body.features['f_wrist_right_R']))#右臂长R
         self.data.append(s_pf.transform_str(*self.side_body.features['s_xiong_R'])) #S胸R
         self.data.append(f_pf.transform_str(*self.front_body.features['f_wrist_left_L']))  # 手腕L

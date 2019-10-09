@@ -58,6 +58,6 @@ class NeckModel(LinearModel):
         return float(result)+NeckModel.mean_value
 
 if __name__ == '__main__':
-    neck_model = NeckModel('U1002218190901092552964',176)
+    neck_model = NeckModel('U1002295190920221708564',176)
     # print(distance([513, 476],[552, 453]))
     print(neck_model.predict())

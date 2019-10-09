@@ -3,11 +3,11 @@ import os
 
 class Log(object):
 
-    def __init__(self):
+    def __init__(self, filename='log.txt'):
         logging.basicConfig(level=logging.INFO,
                             format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
                             datefmt='%a, %d %b %Y %H:%M:%S',
-                            filename=os.path.join(os.getcwd(), 'log.txt'),
+                            filename=os.path.join(os.getcwd(), filename),
                             filemode='a')
 
 

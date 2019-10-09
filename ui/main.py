@@ -18,6 +18,8 @@ from ui.Body import Body,FrontBody,SideBody,BackBody
 from analysis.neck_data import build_user_info
 from model.ShoulderModel import ShoulderModel
 from model.Hip3sideModel import Hip3sideModel
+from model.Xiong3sideModel import Xiong3sideModel
+from model.Yao3sideModel import Yao3sideModel
 
 measure_items_front=['F脖子上L','F脖子上R',
                'F脖子下L','F脖子下R',
@@ -50,12 +52,13 @@ class BodyFrame(QFrame):
         self.resize(dst_size[0],dst_size[1])
         self.start_point,self.end_point=None,None
         self.tag = tag
+        self.op_menu = None
 
     def set_body(self, body_id):
         self.body_id = body_id
         if self.tag == 'F':
             self.body = FrontBody(self.body_id)
-        elif self.tag == 'B':
+        elif self.tag == 'S':
             self.body = SideBody(self.body_id)
         else:
             self.body = BackBody(self.body_id)
@@ -71,6 +74,9 @@ class BodyFrame(QFrame):
         # palette.setBrush(self.backgroundRole(),QBrush(pix_img))
         # self.resize(500,750)
         # self.setPalette(palette)
+
+        self.body.calculate_features()
+
         self.update()
 
     def save_feature(self):
@@ -262,6 +268,17 @@ class BodyFrame(QFrame):
             painter.drawLine(min_x* ratio,bottom_y* ratio,max_x* ratio,bottom_y* ratio)
             painter.drawLine(min_x* ratio, foot_y* ratio, max_x* ratio, foot_y* ratio)
             painter.drawLine(center_x* ratio,bottom_y* ratio,center_x* ratio,0)
+
+        pt_pen = QPen(Qt.cyan, 3, Qt.SolidLine)
+        painter.setPen(pt_pen)
+        for key, pt in self.body.auto_features.items():
+            # print(key)
+            if pt:
+                # print(key,pt)
+                x, y = pt
+                upper_left = QPoint(int(x * ratio - 2), int(y * ratio - 2))
+                down_right = QPoint(int(x * ratio + 2), int(y * ratio + 2))
+                painter.drawEllipse(QRect(upper_left, down_right))
 
 
 class MyDialog(QDialog):
@@ -500,6 +517,7 @@ class MainUI(QMainWindow):
 
     def compute(self):
         try:
+            self.set_body(self.lineEdit.text())
             ud = user_info[self.body_id]
             height = ud['height']
             # model = NeckModel(self.body_id,height)
@@ -516,6 +534,14 @@ class MainUI(QMainWindow):
             model = Hip3sideModel(self.body_id,height)
             tun = model.predict()
             self.edit_tun.setText(str(round(tun, 2)))
+
+            model = Xiong3sideModel(self.body_id, height)
+            xiong = model.predict()
+            self.edit_xiong.setText(str(round(float(xiong), 2)))
+
+            model = Yao3sideModel(self.body_id, height)
+            yao = model.predict()
+            self.edit_yao.setText(str(round(float(yao), 2)))
 
             self.lbl_xiong.setText(str(ud['xiong']))
             self.lbl_yao.setText(str(ud['yao']))

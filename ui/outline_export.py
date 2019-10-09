@@ -1,5 +1,7 @@
 from ui.PointTransformer import PtTransformer
 
+DEBUG = False
+
 class Curves(object):
 
     def __init__(self, start_point, up_curv=None):
@@ -264,7 +266,8 @@ class OutlineTransformer(object):
             # print('warn-------------')
             # self.print_summary(curves)
             # raise Exception('{} leaf curves exists: {}, {}'.format(len(leaf_curves),leaf_curves[0].last_point,prev_point))
-            print('warn: {} leaf curves exists: {}, {}'.format(len(leaf_curves),leaf_curves[0].last_point,prev_point))
+            if DEBUG:
+                print('warn: {} leaf curves exists: {}, {}'.format(len(leaf_curves),leaf_curves[0].last_point,prev_point))
             curves.extend(leaf_curves)
             leaf_curves.clear()
         self.print_summary(curves)
@@ -337,6 +340,8 @@ class OutlineTransformer(object):
         return cnt
 
     def print_summary(self,curves):
+        if not DEBUG:
+            return
         cnt = self.cnt_curves(curves)
         if cnt < self.pts:
             print('warn: {} < {} -----------------------------------------------------------------------------------------------'.format(cnt,self.pts))
@@ -511,8 +516,14 @@ class OutlineTan(object):
         curves = outline_transformer.scan()
         curves = outline_transformer.merge_curves(curves)
         curve_points = outline_transformer.force_connect(curves)
-        pf = PtTransformer(self.front_body.center_x, self.front_body.bottom_y)
-        s_head = '{},{},{}\n'.format(len(curve_points),self.front_body.center_x,self.front_body.bottom_y)
+        if self.front_body.bottom_y and self.front_body.center_x:
+            cent_x = self.front_body.center_x
+            bottom_y = self.front_body.bottom_y
+        else:
+            cent_x = (self.front_body._min_x+self.front_body._max_x)//2
+            bottom_y = self.front_body._max_y
+        pf = PtTransformer(cent_x, bottom_y)
+        s_head = '{},{},{}\n'.format(len(curve_points),cent_x,bottom_y)
         with open(file_path, 'w') as fp:
             fp.write(s_head)
             for pt in curve_points:
@@ -523,8 +534,14 @@ class OutlineTan(object):
         curves = outline_transformer.scan()
         curves = outline_transformer.merge_curves(curves)
         curve_points = outline_transformer.force_connect(curves)
-        pf = PtTransformer(self.side_body.center_x, self.side_body.bottom_y)
-        s_head = '{},{},{}\n'.format(len(curve_points), self.side_body.center_x, self.side_body.bottom_y)
+        if self.side_body.bottom_y and self.side_body.center_x:
+            cent_x = self.side_body.center_x
+            bottom_y = self.side_body.bottom_y
+        else:
+            cent_x = (self.side_body._min_x+self.side_body._max_x)//2
+            bottom_y = self.side_body._max_y
+        pf = PtTransformer(cent_x, bottom_y)
+        s_head = '{},{},{}\n'.format(len(curve_points),cent_x,bottom_y)
         with open(file_path, 'w') as fp:
             fp.write(s_head)
             for pt in curve_points:

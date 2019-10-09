@@ -12,30 +12,43 @@ import pandas as pd
 import os
 
 dir=r'C:\projects\python\measure\ui\data'
-file_path = r'201909模型数据_out.xlsx'
+file_path = r'neck_output_3side.xlsx'
 df=pd.read_excel(os.path.join(dir,file_path))
 df.columns
-df['肩宽'].describe()
+df['颈围'].describe()
 
-shoulder_mean = 42
+neck_mean = 40
 
-df['front']=df['front_shoulder']*df['身高']/df['fh']
+df['front']=df['front_neck']*df['身高']/df['fh']
 df['front'].describe()
 
-df['back']=df['back_shoulder']*df['身高']/df['fh']
+df['side']=df['side_neck']*df['身高']/df['sh']
+df['side'].describe()
+
+df['back']=df['back_neck']*df['身高']/df['bh']
 df['back'].describe()
 
+X=df[['front','side','back']]
 
-X=df[['front','back']]
+df['neck']=df['颈围']-neck_mean
+Y=df['neck']
 
-Y=df['肩宽']-shoulder_mean
+# from sklearn.preprocessing import PolynomialFeatures
+# pf = PolynomialFeatures(degree=2)
+# X_train=pf.fit_transform(X)
+# X_train=df[['front','side','front_side']]
+X_train = X
 
-#X_train=df[['front','side','back']]
-X_train=X
+# X_train=df[['front_back','side']]
+
+#from sklearn.decomposition import PCA
+#pca=PCA(n_components=2)
+#X_train=pca.fit_transform(X_train)
 
 
 from sklearn.linear_model import LinearRegression
 model = LinearRegression()
+
 model.fit(X_train,Y)
 Y_pred=model.predict(X_train)
 diff=Y_pred-Y
@@ -44,7 +57,6 @@ diff
 
 print(diff.describe())
 print(model.coef_,model.intercept_)
-
 import matplotlib.pyplot as plt
 plt.hist(diff,bins=8)
 plt.show()
@@ -53,11 +65,11 @@ plt.show()
 
 
 df['diff']=diff
-df.to_excel(os.path.join(dir,'shoulder_output.xlsx'))
+df.to_excel(os.path.join(dir,'neck_output_3side_linear.xlsx'))
 
 from sklearn.externals import joblib
 
-joblib.dump(value=model, filename=os.path.join(dir,'shoulder.model'))
+joblib.dump(value=model, filename=os.path.join(dir,'neck_3side_linear.model'))
 
 # df.to_excel(os.path.join(path3,'records.xlsx'))
 #

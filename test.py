@@ -37,3 +37,5 @@ b = np.array([4,5,6])
 print(zip(a,b))
 for i,j in zip(a,b):
     print(i,j)
+
+print(np.mean([1,2,3]))
