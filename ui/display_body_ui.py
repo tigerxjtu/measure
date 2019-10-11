@@ -42,6 +42,8 @@ class BodyFrame(QFrame):
         else:
             self.body = BackBody(self.body_id)
         self.body.process_display_img()
+        self.body.load_pre_feature()
+        self.body.calculate_features()
         img = self.body.get_result_img()
         img = cv2.resize(img,dst_size)
         # img = img[:,:,::-1]
@@ -232,6 +234,7 @@ class BodyFrame(QFrame):
         #     down_right = QPoint(int(x * ratio + 2), int(y * ratio + 2))
         #     painter.drawEllipse(QRect(upper_left, down_right))
         #
+
         # pt_pen = QPen(Qt.green, 3, Qt.SolidLine)
         # painter.setPen(pt_pen)
         # for pt in self.body.other_points:
@@ -249,31 +252,31 @@ class BodyFrame(QFrame):
         #     painter.drawEllipse(QRect(upper_left, down_right))
 
         # keys = self.body.bdfeatureXY.keys()
-        keys = ['left_hip','left_shoulder']
-        pt_pen = QPen(Qt.red, 3, Qt.SolidLine)
-        painter.setPen(pt_pen)
-        # for pt in self.body.bdfeatureXY.values():
-        for key in keys:
-            if key not in self.body.bdfeatureXY:
-                continue
-            pt = self.body.bdfeatureXY[key]
-            x, y = pt
-            upper_left = QPoint(int(x * ratio - 2), int(y * ratio - 2))
-            down_right = QPoint(int(x * ratio + 2), int(y * ratio + 2))
-            painter.drawEllipse(QRect(upper_left, down_right))
+        # keys = ['left_hip','left_shoulder']
+        # pt_pen = QPen(Qt.red, 3, Qt.SolidLine)
+        # painter.setPen(pt_pen)
+        # # for pt in self.body.bdfeatureXY.values():
+        # for key in keys:
+        #     if key not in self.body.bdfeatureXY:
+        #         continue
+        #     pt = self.body.bdfeatureXY[key]
+        #     x, y = pt
+        #     upper_left = QPoint(int(x * ratio - 2), int(y * ratio - 2))
+        #     down_right = QPoint(int(x * ratio + 2), int(y * ratio + 2))
+        #     painter.drawEllipse(QRect(upper_left, down_right))
 
-        keys = ['right_hip', 'right_shoulder']
-        pt_pen = QPen(Qt.yellow, 3, Qt.SolidLine)
-        painter.setPen(pt_pen)
-        # for pt in self.body.bdfeatureXY.values():
-        for key in keys:
-            if key not in self.body.bdfeatureXY:
-                continue
-            pt = self.body.bdfeatureXY[key]
-            x, y = pt
-            upper_left = QPoint(int(x * ratio - 2), int(y * ratio - 2))
-            down_right = QPoint(int(x * ratio + 2), int(y * ratio + 2))
-            painter.drawEllipse(QRect(upper_left, down_right))
+        # keys = ['right_hip', 'right_shoulder']
+        # pt_pen = QPen(Qt.yellow, 3, Qt.SolidLine)
+        # painter.setPen(pt_pen)
+        # # for pt in self.body.bdfeatureXY.values():
+        # for key in keys:
+        #     if key not in self.body.bdfeatureXY:
+        #         continue
+        #     pt = self.body.bdfeatureXY[key]
+        #     x, y = pt
+        #     upper_left = QPoint(int(x * ratio - 2), int(y * ratio - 2))
+        #     down_right = QPoint(int(x * ratio + 2), int(y * ratio + 2))
+        #     painter.drawEllipse(QRect(upper_left, down_right))
 
         pt_pen = QPen(Qt.cyan, 3, Qt.SolidLine)
         painter.setPen(pt_pen)

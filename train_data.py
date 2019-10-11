@@ -3,8 +3,10 @@ from BodyClient import body_client
 import time
 
 names=list_name(path1)
+print(path1,len(names),names)
 pics=list_pic_files(path2)
-bd_path = r'C:\projects\python\measure\ui\data\bd'
+# bd_path = r'C:\projects\python\measure\ui\data\bd'
+bd_path = config.txt_dir
 
 #根据文件id和标签得到对应的特征文件和图片文件路径
 def get_file_name(name,tag):
@@ -29,12 +31,12 @@ def save_feature(name):
         out_file = '%s%s1.json' % (name, tag)
         with open(os.path.join(bd_path,out_file), 'w') as fp:
             json.dump(points, fp)
-        out_file = '%s%s2.json' % (name, tag)
-        with open(os.path.join(bd_path,out_file), 'w') as fp:
-            json.dump(outline, fp)
-        out_file = '%s%s3.json' % (name, tag)
-        with open(os.path.join(bd_path,out_file), 'w') as fp:
-            json.dump(rect, fp)
+        # out_file = '%s%s2.json' % (name, tag)
+        # with open(os.path.join(bd_path,out_file), 'w') as fp:
+        #     json.dump(outline, fp)
+        # out_file = '%s%s3.json' % (name, tag)
+        # with open(os.path.join(bd_path,out_file), 'w') as fp:
+        #     json.dump(rect, fp)
 
 if __name__ == '__main__':
     print(names)
@@ -49,3 +51,4 @@ if __name__ == '__main__':
     #         print(e)
     print(path1)
     print(pics)
+    save_feature('U100240319100920441697')

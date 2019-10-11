@@ -3,9 +3,15 @@ from common import *
 from train_data import names
 from ui.Body import FrontBody,SideBody
 from utils import distance
+import os
+from Config import config
+import re
 
-data_file_path = r'C:\projects\python\measure\ui\data\201909模型数据.xlsx'
-output_file_path = r'C:\projects\python\measure\ui\data\201909模型数据_out.xlsx'
+# data_file_path = r'C:\projects\python\measure\ui\data\201909模型数据.xlsx'
+# output_file_path = r'C:\projects\python\measure\ui\data\201909模型数据_out.xlsx'
+data_file_path = os.path.join(config.data_dir,'data.xlsx')
+output_file_path = os.path.join(config.data_dir,'data_out.xlsx')
+
 def load_dataset():
     df = pd.read_excel(data_file_path)
     return df
@@ -71,24 +77,72 @@ def feature_exists(id):
     else:
         return 0
 
+def read_data(file_name):
+    file = os.path.join(config.data_dir,file_name)
+    df = pd.read_excel(file,header=0)
+    result = {}
+    for index, row in df.iterrows():
+        record = {}
+        key = row['name']
+        record['neck']=row['neck']
+        record['shoulder'] = row['shoulder']
+        record['xiong'] = row['xiong']
+        record['yao'] = row['yao']
+        record['tun'] = row['tun']
+        result[key]=record
+    return result
+
+def parse_file(file):
+    parts = re.split('[/\\\\]',file)
+    name = parts[-1][:-5]
+    return name
+
+def map_key_col(key,col,users):
+    record = users[key]
+    return record[col]
+
+def save_dataset():
+    file = os.path.join(config.data_dir, 'records.csv')
+    df = pd.read_csv(file,header=0,encoding='utf-8')
+    print(df)
+    df['ID']=df['pic'].apply(parse_file)
+    cols=['ID', '身高', '体重', '颈围', '胸围', '腰围', '臀围', '肩宽']
+    df['身高']=df['height']
+    df['体重'] = df['weight']
+
+    users = read_data('user.xlsx')
+
+    df['颈围'] = df['NAME'].apply(lambda x:map_key_col(x,'neck',users))
+    df['胸围'] = df['NAME'].apply(lambda x:map_key_col(x,'xiong',users))
+    df['腰围'] = df['NAME'].apply(lambda x:map_key_col(x,'yao',users))
+    df['臀围'] = df['NAME'].apply(lambda x:map_key_col(x,'tun',users))
+    df['肩宽'] = df['NAME'].apply(lambda x:map_key_col(x,'shoulder',users))
+    df =df[cols]
+    df.to_excel(data_file_path)
+
+
+
 if __name__ == '__main__':
-    df = load_dataset()
-    df.to_json(r'C:\projects\python\measure\ui\data\userinfo.json')
-    df['has_feature']=df['ID'].apply(feature_exists)
-    df = df[df['has_feature']==1]
+    # df = load_dataset()
+    # df.to_json(r'C:\projects\python\measure\ui\data\userinfo.json')
+    # df['has_feature']=df['ID'].apply(feature_exists)
+    # df = df[df['has_feature']==1]
+    #
+    # df['front_neck']=df['ID'].apply(front_distance)
+    # df['side_neck']=df['ID'].apply(side_distance)
+    #
+    # df['shoulder']=df['ID'].apply(shoulder_distance)
+    #
+    # df['fh']=df['ID'].apply(front_height)
+    # df['sh']=df['ID'].apply(side_height)
+    #
+    # df.to_excel(output_file_path)
+    #
+    # # user_info = build_user_info()
+    # # print(user_info)
 
-    df['front_neck']=df['ID'].apply(front_distance)
-    df['side_neck']=df['ID'].apply(side_distance)
+    save_dataset()
 
-    df['shoulder']=df['ID'].apply(shoulder_distance)
-
-    df['fh']=df['ID'].apply(front_height)
-    df['sh']=df['ID'].apply(side_height)
-
-    df.to_excel(output_file_path)
-
-    # user_info = build_user_info()
-    # print(user_info)
 
 
 

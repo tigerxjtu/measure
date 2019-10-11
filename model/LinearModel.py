@@ -55,14 +55,15 @@ class LinearModel(object):
 
 if __name__ == '__main__':
     l_model = LinearModel()
-    body_id = 'U1002217190901092403591'
+    body_id ='U1002220190901093908327' #'U1002217190901092403591'
     fbody = l_model.get_body(body_id, 'F')
     sbody = l_model.get_body(body_id, 'S')
-    fbody.load_export_features()
-    sbody.load_export_features()
-    exporter = FeatureTan(fbody, sbody)
-    # sbody.features['f_neck_up_L'],_=exporter.map_front2side_feature('f_neck_up_L')
-    file_path = '%s_FL.txt' % (body_id)
-    exporter.write_file(file_path)
+    fbody.calculate_features()
+    # fbody.load_export_features()
+    # sbody.load_export_features()
+    # exporter = FeatureTan(fbody, sbody)
+    #
+    # file_path = '%s_FL.txt' % (body_id)
+    # exporter.write_file(file_path)
 
 

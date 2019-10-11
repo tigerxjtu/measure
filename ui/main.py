@@ -19,6 +19,7 @@ from analysis.neck_data import build_user_info
 from model.ShoulderModel import ShoulderModel
 from model.Hip3sideModel import Hip3sideModel
 from model.Xiong3sideModel import Xiong3sideModel
+# from model2.Xiong3sideModel import Xiong3sideModel
 from model.Yao3sideModel import Yao3sideModel
 
 measure_items_front=['F脖子上L','F脖子上R',
@@ -518,18 +519,26 @@ class MainUI(QMainWindow):
     def compute(self):
         try:
             self.set_body(self.lineEdit.text())
+            # if self.body_id in user_info:
+            #     ud = user_info[self.body_id]
+            #     height = ud['height']
+            # else:
+            #     ud = None
+            #     height = 170
             ud = user_info[self.body_id]
             height = ud['height']
             # model = NeckModel(self.body_id,height)
             model = Neck3sideModel(self.body_id,height)
             neck = model.predict()
             self.edit_neck.setText(str(round(neck,2)))
-            self.lbl_neck.setText(str(ud['neck']))
+            if ud:
+                self.lbl_neck.setText(str(ud['neck']))
 
             model = ShoulderModel(self.body_id, height)
             shoulder = model.predict()
             self.edit_shoulder.setText(str(round(shoulder, 2)))
-            self.lbl_shoulder.setText(str(ud['shoulder']))
+            if ud:
+                self.lbl_shoulder.setText(str(ud['shoulder']))
 
             model = Hip3sideModel(self.body_id,height)
             tun = model.predict()
@@ -542,10 +551,10 @@ class MainUI(QMainWindow):
             model = Yao3sideModel(self.body_id, height)
             yao = model.predict()
             self.edit_yao.setText(str(round(float(yao), 2)))
-
-            self.lbl_xiong.setText(str(ud['xiong']))
-            self.lbl_yao.setText(str(ud['yao']))
-            self.lbl_tun.setText(str(ud['tun']))
+            if ud:
+                self.lbl_xiong.setText(str(ud['xiong']))
+                self.lbl_yao.setText(str(ud['yao']))
+                self.lbl_tun.setText(str(ud['tun']))
         except Exception as e:
             print(e)
             QMessageBox.information(self, 'error',str(e))

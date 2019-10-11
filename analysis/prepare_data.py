@@ -6,7 +6,7 @@ from utils import distance
 import numpy as np
 from BodyFeature import min_feature_range,max_feature_range
 
-data_file_path = r'C:\projects\python\measure\ui\data\201909模型数据.xlsx'
+data_file_path = r'C:\projects\python\measure\ui\data\data.xlsx'
 output_file_path = r'C:\projects\python\measure\ui\data\201909模型数据_out.xlsx'
 def load_dataset():
     df = pd.read_excel(data_file_path)

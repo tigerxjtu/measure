@@ -1,10 +1,11 @@
 from abc import ABCMeta, abstractmethod
 import cv2
+import numpy as np
 from common import *
 # from train_data import get_file_name
 from file_name import get_file_name
 # from db_client import get_file_name
-from BodyFeature import min_angle_feature,min_feature,min_distance_angle,round_int,min_y_pt,get_outline_distribute
+from BodyFeature import min_angle_feature,min_feature,min_distance_angle,round_int,min_y_pt,get_outline_distribute,speed_delta,range_outline
 from utils import x_inersect_y
 
 # bd_path = r'C:\projects\python\measure\ui\data\bd'
@@ -146,21 +147,25 @@ class Body(object):
         self._max_y = p[1]
 
     def load_pre_feature(self):
-        if self.folder:
-            file = os.path.join(path1,self.folder, '%s%s2.txt' % (self.body_id, self.tag))
-        else:
-            file = os.path.join(path1, '%s%s2.txt' % (self.body_id, self.tag))
-        with open(file) as f:
-            content = f.read()
-            data = json.loads(content)
-            points = data['featureXY']
-            self.featureXY = {p['pos']:(int(p['x']), int(p['y'])) for p in points}
-        if self.folder:
-            out_file = os.path.join(path1,self.folder, '%s%s1.json' % (self.body_id, self.tag))
-        else:
-            out_file =os.path.join(path1,'%s%s1.json' % (self.body_id, self.tag))
-        with open(out_file, 'r') as fp:
-            self.bdfeatureXY = json.load(fp)
+        try:
+            if self.folder:
+                file = os.path.join(path1,self.folder, '%s%s2.txt' % (self.body_id, self.tag))
+            else:
+                file = os.path.join(path1, '%s%s2.txt' % (self.body_id, self.tag))
+            with open(file) as f:
+                content = f.read()
+                data = json.loads(content)
+                points = data['featureXY']
+                self.featureXY = {p['pos']:(int(p['x']), int(p['y'])) for p in points}
+            if self.folder:
+                out_file = os.path.join(path1,self.folder, '%s%s1.json' % (self.body_id, self.tag))
+            else:
+                out_file =os.path.join(path1,'%s%s1.json' % (self.body_id, self.tag))
+            with open(out_file, 'r') as fp:
+                self.bdfeatureXY = json.load(fp)
+        except Exception as e:
+            print(e)
+            print('load pre feature fails:', self.body_id)
 
     def load_export_features(self):
         self.bottom_y = self._max_y
@@ -230,6 +235,7 @@ class Body(object):
         for point in self.outline:
             cv2.circle(self.img, point, 1, (0, 0, 255))
 
+
     def calculate_features(self):
         features = {}
         neck_feature = self.proces_neck_feature()
@@ -246,6 +252,7 @@ class Body(object):
                 features['ye_L']=min_y_pt(self.outline,x_left-2,x1,features['shoulder_L'][1]+5)
                 features['ye_R'] = min_y_pt(self.outline, x2, x_right+2, features['shoulder_R'][1]+5)
                 # print(features['ye_L'],features['ye_R'])
+
             except Exception as e:
                 print(e)
 
@@ -259,9 +266,14 @@ class Body(object):
                 features['huiyin']=min_y_pt(self.outline, x1,x2, features['tun_R'][1])
             except Exception as e:
                 print(e)
+        y_up, y_down, x0 = self.get_main_range2()  # shoulder, hip
+        # yao
+        r = 2.8
+        y = int((y_up + r * y_down) / (1 + r))
+        features['yao_L'], features['yao_R'] = self.cut_by_y(y, x0)
         #xiong
         r=0.25
-        y_up, y_down, x0 = self.get_main_range2()  # shoulder, hip
+
         y = int((y_up + r * y_down) / (1 + r))
         if self.tag == 'S':
             features['xiong_L'],features['xiong_R'] = self.cut_by_y(y, x0)
@@ -270,19 +282,28 @@ class Body(object):
                 left, right = features['shoulder_L'], features['shoulder_R']
                 bot_left, bot_right = features['ye_L'],features['ye_R']
                 if y<bot_left[1]:
-                    features['xiong_L'] = (x_inersect_y(left,bot_left,y),y)
+                    xiong_L = (x_inersect_y(left,bot_left,y),y)
                 else:
-                    features['xiong_L'] = self.cut_by_y(y, x0)[0]
+                    xiong_L = self.cut_by_y(y, x0)[0]
                 if y<bot_right[1]:
-                    features['xiong_R'] = (x_inersect_y(right, bot_right, y),y)
+                    xiong_R = (x_inersect_y(right, bot_right, y),y)
                 else:
-                    features['xiong_R'] = self.cut_by_y(y, x0)[1]
+                    xiong_R = self.cut_by_y(y, x0)[1]
+                bot_left, bot_right = features['yao_L'], features['yao_R']
+                xiong_L_new = (x_inersect_y(left, bot_left, y), y)
+                xiong_R_new = (x_inersect_y(right, bot_right, y), y)
+                if xiong_L[0]>xiong_L_new[0]:
+                    features['xiong_L'] = xiong_L
+                else:
+                    features['xiong_L'] = xiong_L_new
+
+                if xiong_R[0]<xiong_R_new[0]:
+                    features['xiong_R'] = xiong_R
+                else:
+                    features['xiong_R'] = xiong_R_new
+
             except Exception as e:
                 print(e)
-        #yao
-        r=2.8
-        y = int((y_up + r * y_down) / (1 + r))
-        features['yao_L'],features['yao_R'] = self.cut_by_y(y, x0)
 
         self.auto_features = features
         # print(features)
@@ -320,13 +341,58 @@ class Body(object):
             shoulder_L = shoulder_L[0],shoulder_L[1] if shoulder_L else None
             shoulder_R = min_distance_angle(self.outline, self.bdfeatureXY['left_shoulder'],0.8)
             shoulder_R = shoulder_R[0], shoulder_R[1] if shoulder_R else None
+            # print(shoulder_L,shoulder_R)
+            # self.other_points.append(self.left_shoulder_feature(self.bdfeatureXY['right_shoulder']))
+            # self.other_points.append(self.right_shoulder_feature(self.bdfeatureXY['left_shoulder']))
+
             return shoulder_L[0],shoulder_R[0]
         if self.tag == 'B':
             shoulder_L = min_distance_angle(self.outline, self.bdfeatureXY['left_shoulder'], -0.8)
             shoulder_L = shoulder_L[0], shoulder_L[1] if shoulder_L else None
             shoulder_R = min_distance_angle(self.outline, self.bdfeatureXY['right_shoulder'], 0.8)
             shoulder_R = shoulder_R[0], shoulder_R[1] if shoulder_R else None
+
+            # self.other_points.append(self.left_shoulder_feature(self.bdfeatureXY['left_shoulder']))
+            # self.other_points.append(self.right_shoulder_feature(self.bdfeatureXY['right_shoulder']))
+
             return shoulder_L[0], shoulder_R[0]
+
+    def left_shoulder_feature(self,left_shoulder,min_y_range=20):
+        x,y = left_shoulder
+        x,y = int(x),int(y)
+        up,_=self.cut_by_x(x)
+        if y-up[1]<min_y_range:
+            y=up[1]+min_y_range
+        left,_ = self.cut_by_y_out(y)
+        points = range_outline(self.outline,up,left)
+        speeds=speed_delta(points)
+        index = np.argmax(np.abs(speeds))
+        print(index)
+        self.add_other_points(up)
+        self.add_other_points(left)
+        # print(speeds)
+        return points[index]
+
+    def right_shoulder_feature(self,right_shoulder,min_y_range=20):
+        x, y = right_shoulder
+        x, y = int(x), int(y)
+        up, _ = self.cut_by_x(x)
+        if y - up[1] < min_y_range:
+            y = up[1] + min_y_range
+        _, right = self.cut_by_y_out(y)
+        points = range_outline(self.outline, up, right)
+        speeds = speed_delta(points)
+        speeds2=[]
+        for i in range(len(speeds)):
+            if i==0:
+                speeds2.append(speeds[i])
+            else:
+                speeds2.append(speeds[i]+speeds[i-1])
+        index = np.argmax(np.abs(speeds2))
+        self.add_other_points(up)
+        self.add_other_points(right)
+        return points[index]
+
 
     def process_hip_feature(self):
         left, right = self.bdfeatureXY['left_hip'], self.bdfeatureXY['right_hip']
@@ -350,6 +416,16 @@ class Body(object):
 
     def get_result_img(self):
         return self.img
+
+    def cut_by_x(self,x0):
+        # print(x0)
+        # print(len(self.outline))
+        points = filter(lambda x: x[0] == x0, self.outline)
+        points = list(points)
+        # print(points)
+        up = min(points, key=lambda x: x[1])
+        down = max(points, key=lambda x: x[1])
+        return up, down
 
     def cut_by_y_out(self,y):
         points = filter(lambda x: x[1] == y, self.outline)

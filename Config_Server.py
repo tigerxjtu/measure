@@ -17,7 +17,7 @@ class Config(object):
         self.db_host = '127.0.0.1'
         self.db_name = 'nonecms'
         self.db_user = 'aosoft'
-        self.db_passwd = 'zc_-zmJj2QdhTX423#_!'
+        self.db_passwd = 'pass'
 
         self.train_mode = False
         # self.read()

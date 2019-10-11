@@ -50,7 +50,7 @@ class OutlineTransformer(object):
         self.top_point = top_point
         self.outline = outline_points
         self.cross_curves = []
-        print(len(self.outline))
+        # print(len(self.outline))
 
     def is_near(self,pt,curve):
         last_pt=curve.last_point
@@ -489,6 +489,22 @@ class OutlineTransformer(object):
         points = prev_curv.curves
         points.pop(0)
         return points[::-1]
+
+    def down_order_points(self,points):
+        if not points:
+            return points
+        start,end = points[0],points[-1]
+        if start[1]>end[1]:
+            return points[::-1]
+        return points
+
+    def to_one_curve(self,curves,reverse=False):
+        if not curves:
+            return []
+        curve = max(curves,key=lambda curve: len(curve.curves))
+        points = curve.curves
+        points.pop(0)
+        return self.down_order_points(points)
 
     def merge_curves(self,curves):
         new_curves, flag = self.comine_vetex(curves)

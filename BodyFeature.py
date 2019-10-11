@@ -1,6 +1,7 @@
 import numpy as np
 from BodyClient import body_client
 from utils import distance
+from ui.outline_export import OutlineTransformer
 
 
 #对x按四舍五入取整
@@ -110,6 +111,7 @@ def max_feature_range(outline,lower_y,upper_y):
 
 #按照（lower_pct,upper_pct,top_y,bottom_y）范围内在轮廓线上按水平方向找最长距离的交点集
 def max_feature(outline,lower_pct,upper_pct,top_y,bottom_y):
+    Y = np.array([p[1] for p in outline])
     if not top_y:
         bottom_y = np.max(Y)
         top_y = np.min(Y)
@@ -319,9 +321,10 @@ def shoulder_markers(points):
     print(point1,point2)
     return point1,point2
 
-def pt_in_range(pt, start_point, end_point):
+def pt_in_range(pt, start_point, end_point, delta=1):
     start_x,start_y = start_point
     end_x,end_y = end_point
+    start_y -= delta #应对错位
     x,y = pt
     if (start_x-x>=0 and x-end_x>=0) or (start_x-x<0 and x-end_x<0):
         if (start_y - y >= 0 and y - end_y >= 0) or (start_y - y < 0 and y - end_y < 0):
@@ -329,13 +332,53 @@ def pt_in_range(pt, start_point, end_point):
     return False
 
 #start_point： left most/ max_y , end_point: right_most/min_y
-def range_outline(outline, start_point, end_point, reverse=True):
+def range_outline(outline, start_point, end_point):
     points = filter(lambda x: pt_in_range(x,start_point,end_point), outline)
     points = list(points)
-    if reverse:
-        return points[::-1]
-    else:
-        return points
+    if not points:
+        return []
+    outline_transformer = OutlineTransformer(points,points[0])
+    curves = outline_transformer.scan()
+    curves = outline_transformer.merge_curves(curves)
+    curve_points = outline_transformer.to_one_curve(curves)
+    return curve_points
+
+def calc_delta(pt1,pt2):
+    x1,y1=pt1
+    x2,y2=pt2
+    if x1==x2:
+        return None
+    return (y2-y1)/(x2-x1)
+
+def outline_delta(points, delta=3):
+    result = []
+    if not points:
+        return result
+    prev_pt=points[0]
+    for i,pt in enumerate(points):
+        if i<delta:
+            result.append(0)
+            continue
+        result.append(calc_delta(pt,prev_pt))
+        prev_pt = points[i-delta+1]
+    return result
+
+def speed_delta(points, delta=3):
+    print('points:',points)
+    speed = outline_delta(points,delta)
+    print('speed:',speed)
+    result = [0]
+    prev=speed[0]
+    for p in speed[1:]:
+        try:
+            result.append(p - prev)
+        except:
+            result.append(0)
+        prev=p
+    print('speed2:', result)
+    return result
+
+
 
 
 

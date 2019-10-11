@@ -14,7 +14,8 @@ from model.LinearModel import  LinearModel
 from model.Neck3sideModel import Neck3sideModel
 from model.ShoulderModel import ShoulderModel
 from model.Hip3sideModel import Hip3sideModel
-from model.Xiong3sideModel import Xiong3sideModel
+# from model.Xiong3sideModel import Xiong3sideModel
+from model2.Xiong3sideModel import Xiong3sideModel
 from model.Yao3sideModel import Yao3sideModel
 
 from ui.outline_export import OutlineTransformer,OutlineTan
