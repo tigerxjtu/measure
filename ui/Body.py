@@ -80,6 +80,11 @@ class Body(object):
 
         self.auto_features={}
 
+        self.extra=None
+
+    def set_extra(self,extra):
+        self.extra = extra
+
     @abstractmethod
     def load_file(self):
         pass

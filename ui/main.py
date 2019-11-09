@@ -533,12 +533,16 @@ class MainUI(QMainWindow):
             self.edit_neck.setText(str(round(neck,2)))
             if ud:
                 self.lbl_neck.setText(str(ud['neck']))
+            else:
+                self.lbl_neck.setText('')
 
             model = ShoulderModel(self.body_id, height)
             shoulder = model.predict()
             self.edit_shoulder.setText(str(round(shoulder, 2)))
             if ud:
                 self.lbl_shoulder.setText(str(ud['shoulder']))
+            else:
+                self.lbl_shoulder.setText('')
 
             model = Hip3sideModel(self.body_id,height)
             tun = model.predict()
@@ -555,6 +559,10 @@ class MainUI(QMainWindow):
                 self.lbl_xiong.setText(str(ud['xiong']))
                 self.lbl_yao.setText(str(ud['yao']))
                 self.lbl_tun.setText(str(ud['tun']))
+            else:
+                self.lbl_xiong.setText('')
+                self.lbl_yao.setText('')
+                self.lbl_tun.setText('')
         except Exception as e:
             print(e)
             QMessageBox.information(self, 'error',str(e))

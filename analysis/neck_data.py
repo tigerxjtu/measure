@@ -17,19 +17,24 @@ def load_dataset():
     return df
 
 def build_user_info():
-    df = load_dataset()
-    result= {}
-    df = df[['ID','身高','体重','颈围','胸围','腰围','臀围','肩宽']]
-    data = df.values
-    rows,cols = data.shape
-    col_names = ['id','height','weight','neck','xiong','yao','tun','shoulder']
-    result = {}
-    for i in range(rows):
-        record = {}
-        for j in range(cols):
-            record[col_names[j]] = data[i,j]
-        result[record['id']]=record
-    return result
+    try:
+        df = load_dataset()
+        result= {}
+        df = df[['ID','身高','体重','颈围','胸围','腰围','臀围','肩宽']]
+        data = df.values
+        rows,cols = data.shape
+        col_names = ['id','height','weight','neck','xiong','yao','tun','shoulder']
+        result = {}
+        for i in range(rows):
+            record = {}
+            for j in range(cols):
+                record[col_names[j]] = data[i,j]
+            result[record['id']]=record
+        return result
+    except Exception as e:
+        print(e)
+        return {}
+
 
 def check_id(df):
     ids = df['ID'].values.tolist()
@@ -101,6 +106,26 @@ def map_key_col(key,col,users):
     record = users[key]
     return record[col]
 
+'''
+SELECT
+  b.id,
+  BBI02 NAME,
+  b.BBI03 height,
+  b.BBI04 weight,
+  p.bfd08 neck,
+  p.bh11 shoulder,
+  p.bfd11 xiong,
+  p.bfd12 yao,
+  p.bfd13 tun,
+  f.bpf01 pic
+FROM
+  none_body_baseinfo b,
+  none_body_feature_data p,
+  none_body_picfile f
+WHERE p.bbiid = b.id AND f.bbiid=b.id
+  AND b.id>=1002396
+ORDER BY b.bbi02
+'''
 def save_dataset():
     file = os.path.join(config.data_dir, 'records.csv')
     df = pd.read_csv(file,header=0,encoding='utf-8')

@@ -46,11 +46,12 @@ class Curves(object):
 
 class OutlineTransformer(object):
 
-    def __init__(self, outline_points, top_point):
+    def __init__(self, outline_points, top_point, body_id=None):
         self.top_point = top_point
         self.outline = outline_points
         self.cross_curves = []
         # print(len(self.outline))
+        self.body_id = body_id
 
     def is_near(self,pt,curve):
         last_pt=curve.last_point
@@ -446,15 +447,19 @@ class OutlineTransformer(object):
         return abs(pt1[0]-pt2[0]) + abs(pt1[1]-pt2[1])
 
     def distance(self,left_start,left_last,right_start,right_last):
-        ds=[(left_last,right_start),(left_last,right_last)]
-        min_index=0
-        min_dis=self.dis(ds[0][0],ds[0][1])
-        for i,pair in enumerate(ds[1:]):
-            dis = self.dis(pair[0],pair[1])
-            if dis<min_dis:
-                min_index = i+1
-                min_dis = dis
-        return min_index,min_dis
+        # ds=[(left_last,right_start),(left_last,right_last)]
+        # min_index=0
+        # min_dis=self.dis(ds[0][0],ds[0][1])
+        # for i,pair in enumerate(ds[1:]):
+        #     dis = self.dis(pair[0],pair[1])
+        #     if dis<min_dis:
+        #         min_index = i+1
+        #         min_dis = dis
+        # return min_index,min_dis
+        ds = [((0, 0), self.dis(left_start, right_start)), ((0, 1), self.dis(left_start, right_last)),
+              ((1, 0), self.dis(left_last, right_start)), ((1, 1), self.dis(left_last, right_last))]
+        min_dis = min(ds,key=lambda x:x[1])
+        return min_dis[0],min_dis[1]
 
     def prob_merge(self,left_curv,right_curv,thresh=50):
         index,dis = self.distance(left_curv.start_point,left_curv.last_point,right_curv.start_point,right_curv.last_point)
@@ -462,33 +467,148 @@ class OutlineTransformer(object):
             return True,index
         return False,None
 
-    def force_connect(self,curves):
+    def do_force_connect(self,curves):
+        left_curves = []
+        remain_curves = []
         if not curves:
             return []
-        if len(curves)==1:
-            points = curves[0].curves
-            points.pop(0)
-            return points[::-1]
+        if len(curves) == 1:
+            return curves
         prev_curv = curves[0]
         # first = True
+        merged = False
         for curv in curves[1:]:
-            flag,index = self.prob_merge(prev_curv,curv)
+            flag, index = self.prob_merge(prev_curv, curv)
             # index += 2
             if flag:
                 # if index<2:
                 #     raise Exception('Cannot merge to one curve')
-                if index==0:
+                left_index, right_index = index
+                if left_index == 0:
+                    prev_curv.reverse()
+                if right_index == 0:
                     prev_curv.add_points(curv.curves)
                 else:
                     prev_curv.add_points(curv.curves[::-1])
                     # raise Exception('Cannot merge to one curve')
                 # first = False
+                merged = True
             else:
-                raise Exception('Cannot merge to one curve')
-        self.print_summary([prev_curv])
-        points = prev_curv.curves
-        points.pop(0)
-        return points[::-1]
+                # raise Exception('Cannot merge to one curve')
+                # left_curves.append(curv)
+                remain_curves.append(prev_curv)
+                prev_curv=curv
+        remain_curves.append(prev_curv)
+        final_curves=self.filter_small_curves(remain_curves,30)
+        if merged:
+            return self.do_force_connect(final_curves)
+        else:
+            return final_curves
+
+        # self.print_summary([prev_curv])
+        # if left_curves:
+        #     print('left curves:---------------------------------',self._sum_left_curve_points(left_curves))
+        #     self.print_summary(left_curves)
+        #     max_curve = max(left_curves, key=lambda x: len(x.curves))
+        #     max_len = len(max_curve.curves)
+        #     prev_len = len(prev_curv.curves)
+        #     if max_len > prev_len:
+        #         # if len(prev_curv.curves)>100:
+        #         #     print('warning:', len(prev_curv.curves))
+        #         # print('warning:', len(prev_curv.curves))
+        #         if prev_len>=100:
+        #             remain_curves.append(prev_curv)
+        #         return remain_curves + self.do_force_connect(left_curves)
+        # remain_curves.append(prev_curv)
+        # return remain_curves
+
+    def _can_force_connect(self,pt1,pt2):
+        x1,y1=pt1
+        x2,y2=pt2
+        if self.dis(pt1,pt2) < 80:
+            return True
+        if abs(y2-y1)<20:
+            return True
+        return False
+
+    def _order_points(self,points):
+        start = points[0]
+        end = points[-1]
+        if start[0]==end[0] and start[1]==end[1]:
+            points.pop(0)
+            start = points[0]
+            end = points[-1]
+        index = 0
+        for pt in points:
+            if pt[0]==self.top_point[0] and pt[1]==self.top_point[1]:
+                break
+            index += 1
+        if start[0]<end[0]:
+            right_points = points[index:]
+            left_points = points[:index]
+            temp_points = right_points+left_points
+        else:
+            right_points = points[:index+1]
+            left_points = points[index+1:]
+            temp_points = right_points[::-1]+left_points[::-1]
+        head_point = temp_points[0]
+        side_point = temp_points[5]
+        if head_point[0] > side_point[0]:
+            return temp_points[::-1]
+        return temp_points
+
+
+
+    def force_connect(self,curves):
+        final_curves = self.do_force_connect(curves)
+        if len(final_curves)==1:
+            prev_curv = final_curves[0]
+            points = prev_curv.curves
+            # points.pop(0)
+            # return points[::-1]
+            return self._order_points(points)
+        curves = sorted(final_curves,key=lambda x: len(x.curves),reverse=True)
+        curv1 = curves[0]
+        curv2 = curves[1]
+        start1 = curv1.start_point
+        start2 = curv2.start_point
+        if start1[0]<start2[0]:
+            left_curve,right_curve = curv1, curv2
+        else:
+            left_curve, right_curve = curv2, curv1
+        flag, index =self.prob_merge(left_curve,right_curve,thresh=80)
+        if flag:
+            left_index, right_index = index
+            if left_index == 0:
+                left_curve.reverse()
+            if right_index == 0:
+                left_curve.add_points(right_curve.curves)
+            else:
+                left_curve.add_points(right_curve.curves[::-1])
+                # raise Exception('Cannot merge to one curve')
+            # first = False
+        else:
+            left_curve = max([left_curve,right_curve],key=lambda x: len(x.curves))
+            # raise Exception('Cannot merge to one curve')
+        return self._order_points(left_curve.curves)
+
+
+        # prev_curv = curves.pop(0)
+        # while curves:
+        #     cur_curv = curves.pop(0)
+        #     if self._can_force_connect(prev_curv.last_point,cur_curv.start_point):
+        #         prev_curv.add_points(cur_curv.curves)
+        #     else:
+        #         raise Exception('multiple curves exists!',self.body_id)
+        # points = prev_curv.curves
+        # # points.pop(0)
+        # return points[::-1]
+
+
+    def _sum_left_curve_points(self,left_curves):
+        curves = [len(curve.curves) for curve in left_curves]
+        return sum(curves)
+
 
     def down_order_points(self,points):
         if not points:
@@ -527,8 +647,39 @@ class OutlineTan(object):
         self.front_body = front_body
         self.side_body = side_body
 
+    def front_curves(self):
+        outline_transformer = OutlineTransformer(self.front_body.outline, self.front_body.top_head_point,
+                                                 self.front_body.body_id)
+        curves = outline_transformer.scan()
+        curves = outline_transformer.merge_curves(curves)
+        curves = outline_transformer.do_force_connect(curves)
+        return [curve.curves for curve in curves]
+
+    def side_curves(self):
+        outline_transformer = OutlineTransformer(self.side_body.outline, self.side_body.top_head_point,
+                                                 self.side_body.body_id)
+        curves = outline_transformer.scan()
+        curves = outline_transformer.merge_curves(curves)
+        curves = outline_transformer.do_force_connect(curves)
+        return [curve.curves for curve in curves]
+
+    def front_points(self):
+        outline_transformer = OutlineTransformer(self.front_body.outline, self.front_body.top_head_point,self.front_body.body_id)
+        curves = outline_transformer.scan()
+        curves = outline_transformer.merge_curves(curves)
+        curve_points = outline_transformer.force_connect(curves)
+        return curve_points
+
+    def side_points(self):
+        outline_transformer = OutlineTransformer(self.side_body.outline, self.side_body.top_head_point,self.side_body.body_id)
+        curves = outline_transformer.scan()
+        curves = outline_transformer.merge_curves(curves)
+        curve_points = outline_transformer.force_connect(curves)
+        return curve_points
+
+
     def export_front(self,file_path):
-        outline_transformer = OutlineTransformer(self.front_body.outline, self.front_body.top_head_point)
+        outline_transformer = OutlineTransformer(self.front_body.outline, self.front_body.top_head_point,self.front_body.body_id)
         curves = outline_transformer.scan()
         curves = outline_transformer.merge_curves(curves)
         curve_points = outline_transformer.force_connect(curves)
@@ -546,7 +697,7 @@ class OutlineTan(object):
                 fp.write(pf.transform_str(*pt)+'\n')
 
     def export_side(self,file_path):
-        outline_transformer = OutlineTransformer(self.side_body.outline, self.side_body.top_head_point)
+        outline_transformer = OutlineTransformer(self.side_body.outline, self.side_body.top_head_point,self.side_body.body_id)
         curves = outline_transformer.scan()
         curves = outline_transformer.merge_curves(curves)
         curve_points = outline_transformer.force_connect(curves)

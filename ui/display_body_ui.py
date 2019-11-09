@@ -194,108 +194,145 @@ class BodyFrame(QFrame):
         self.move_line(dx,dy)
 
     def paintEvent(self, event):
-        if not self.body:
-            return
-        painter = QPainter(self)
-        painter.drawPixmap(0, 0, dst_size[0], dst_size[1],self.pix_img);
-        pen = QPen(Qt.red, 2, Qt.SolidLine)
-        if self.start_point and self.end_point:
-            painter.setPen(pen)
-            painter.drawLine(self.start_point,self.end_point)
-            cent_x=(self.start_point.x()+self.end_point.x())//2
-            cent_y=(self.start_point.y()+self.end_point.y())//2
-            painter.drawLine(cent_x,cent_y,cent_x,0)
+        try:
+            if not self.body:
+                return
+            painter = QPainter(self)
+            painter.drawPixmap(0, 0, dst_size[0], dst_size[1],self.pix_img);
+            pen = QPen(Qt.red, 2, Qt.SolidLine)
+            if self.start_point and self.end_point:
+                painter.setPen(pen)
+                painter.drawLine(self.start_point,self.end_point)
+                cent_x=(self.start_point.x()+self.end_point.x())//2
+                cent_y=(self.start_point.y()+self.end_point.y())//2
+                painter.drawLine(cent_x,cent_y,cent_x,0)
 
-        # pt_pen = QPen(Qt.blue, 3, Qt.SolidLine)
-        # painter.setPen(pt_pen)
-        # for point in self.body.features.values():
-        #     x,y=point
-        #     upper_left=QPoint(int(x*ratio-2),int(y*ratio-2))
-        #     down_right=QPoint(int(x*ratio+2),int(y*ratio+2))
-        #     painter.drawEllipse(QRect(upper_left,down_right))
-        # if self.body.top_head_point:
-        #     x, y = self.body.top_head_point
-        #     upper_left = QPoint(int(x * ratio - 2), int(y * ratio - 2))
-        #     down_right = QPoint(int(x * ratio + 2), int(y * ratio + 2))
-        #     painter.drawEllipse(QRect(upper_left, down_right))
-        # if self.body.left_finger:
-        #     x, y = self.body.left_finger
-        #     upper_left = QPoint(int(x * ratio - 2), int(y * ratio - 2))
-        #     down_right = QPoint(int(x * ratio + 2), int(y * ratio + 2))
-        #     painter.drawEllipse(QRect(upper_left, down_right))
-        # if self.body.left_finger:
-        #     x, y = self.body.right_finger
-        #     upper_left = QPoint(int(x * ratio - 2), int(y * ratio - 2))
-        #     down_right = QPoint(int(x * ratio + 2), int(y * ratio + 2))
-        #     painter.drawEllipse(QRect(upper_left, down_right))
-        # if self.body.huiyin_point:
-        #     x, y = self.body.huiyin_point
-        #     upper_left = QPoint(int(x * ratio - 2), int(y * ratio - 2))
-        #     down_right = QPoint(int(x * ratio + 2), int(y * ratio + 2))
-        #     painter.drawEllipse(QRect(upper_left, down_right))
-        #
-
-        # pt_pen = QPen(Qt.green, 3, Qt.SolidLine)
-        # painter.setPen(pt_pen)
-        # for pt in self.body.other_points:
-        #     x, y = pt
-        #     upper_left = QPoint(int(x * ratio - 2), int(y * ratio - 2))
-        #     down_right = QPoint(int(x * ratio + 2), int(y * ratio + 2))
-        #     painter.drawEllipse(QRect(upper_left, down_right))
-
-        # pt_pen = QPen(Qt.green, 3, Qt.SolidLine)
-        # painter.setPen(pt_pen)
-        # for pt in self.body.featureXY.values():
-        #     x, y = pt
-        #     upper_left = QPoint(int(x * ratio - 2), int(y * ratio - 2))
-        #     down_right = QPoint(int(x * ratio + 2), int(y * ratio + 2))
-        #     painter.drawEllipse(QRect(upper_left, down_right))
-
-        # keys = self.body.bdfeatureXY.keys()
-        # keys = ['left_hip','left_shoulder']
-        # pt_pen = QPen(Qt.red, 3, Qt.SolidLine)
-        # painter.setPen(pt_pen)
-        # # for pt in self.body.bdfeatureXY.values():
-        # for key in keys:
-        #     if key not in self.body.bdfeatureXY:
-        #         continue
-        #     pt = self.body.bdfeatureXY[key]
-        #     x, y = pt
-        #     upper_left = QPoint(int(x * ratio - 2), int(y * ratio - 2))
-        #     down_right = QPoint(int(x * ratio + 2), int(y * ratio + 2))
-        #     painter.drawEllipse(QRect(upper_left, down_right))
-
-        # keys = ['right_hip', 'right_shoulder']
-        # pt_pen = QPen(Qt.yellow, 3, Qt.SolidLine)
-        # painter.setPen(pt_pen)
-        # # for pt in self.body.bdfeatureXY.values():
-        # for key in keys:
-        #     if key not in self.body.bdfeatureXY:
-        #         continue
-        #     pt = self.body.bdfeatureXY[key]
-        #     x, y = pt
-        #     upper_left = QPoint(int(x * ratio - 2), int(y * ratio - 2))
-        #     down_right = QPoint(int(x * ratio + 2), int(y * ratio + 2))
-        #     painter.drawEllipse(QRect(upper_left, down_right))
-
-        pt_pen = QPen(Qt.cyan, 3, Qt.SolidLine)
-        painter.setPen(pt_pen)
-        for key,pt in self.body.auto_features.items():
-            # print(key)
-            if pt:
-                # print(key,pt)
-                x, y = pt
+            # pt_pen = QPen(Qt.blue, 3, Qt.SolidLine)
+            # painter.setPen(pt_pen)
+            # for point in self.body.features.values():
+            #     x,y=point
+            #     upper_left=QPoint(int(x*ratio-2),int(y*ratio-2))
+            #     down_right=QPoint(int(x*ratio+2),int(y*ratio+2))
+            #     painter.drawEllipse(QRect(upper_left,down_right))
+            if self.body.top_head_point:
+                x, y = self.body.top_head_point
                 upper_left = QPoint(int(x * ratio - 2), int(y * ratio - 2))
                 down_right = QPoint(int(x * ratio + 2), int(y * ratio + 2))
                 painter.drawEllipse(QRect(upper_left, down_right))
+            if self.body.left_finger:
+                x, y = self.body.left_finger
+                upper_left = QPoint(int(x * ratio - 2), int(y * ratio - 2))
+                down_right = QPoint(int(x * ratio + 2), int(y * ratio + 2))
+                painter.drawEllipse(QRect(upper_left, down_right))
+            if self.body.left_finger:
+                x, y = self.body.right_finger
+                upper_left = QPoint(int(x * ratio - 2), int(y * ratio - 2))
+                down_right = QPoint(int(x * ratio + 2), int(y * ratio + 2))
+                painter.drawEllipse(QRect(upper_left, down_right))
+            if self.body.huiyin_point:
+                x, y = self.body.huiyin_point
+                upper_left = QPoint(int(x * ratio - 2), int(y * ratio - 2))
+                down_right = QPoint(int(x * ratio + 2), int(y * ratio + 2))
+                painter.drawEllipse(QRect(upper_left, down_right))
+            #
 
-        min_x, max_x, center_x, foot_y, bottom_y =self.body.get_cord_pos()
-        if foot_y:
-            cord_pen = QPen(Qt.blue, 2, Qt.SolidLine)
-            painter.setPen(cord_pen)
-            painter.drawLine(min_x* ratio,bottom_y* ratio,max_x* ratio,bottom_y* ratio)
-            painter.drawLine(min_x* ratio, foot_y* ratio, max_x* ratio, foot_y* ratio)
-            painter.drawLine(center_x* ratio,bottom_y* ratio,center_x* ratio,0)
+            pt_pen = QPen(Qt.green, 3, Qt.SolidLine)
+            painter.setPen(pt_pen)
+            last_pt = None
+            for pt in self.body.other_points:
+                x, y = pt
+                if last_pt:
+                    upper_left = QPoint(int(x * ratio - 2), int(y * ratio - 2))
+                    down_right = QPoint(int(x * ratio + 2), int(y * ratio + 2))
+                else:
+                    upper_left = QPoint(int(x * ratio - 4), int(y * ratio - 4))
+                    down_right = QPoint(int(x * ratio + 4), int(y * ratio + 4))
+                painter.drawEllipse(QRect(upper_left, down_right))
+                last_pt = pt
+            if last_pt:
+                pt_pen = QPen(Qt.red, 3, Qt.SolidLine)
+                painter.setPen(pt_pen)
+                x, y = last_pt
+                upper_left = QPoint(int(x * ratio - 4), int(y * ratio - 4))
+                down_right = QPoint(int(x * ratio + 4), int(y * ratio + 4))
+                painter.drawEllipse(QRect(upper_left, down_right))
+
+
+            # pt_pen = QPen(Qt.green, 3, Qt.SolidLine)
+            # painter.setPen(pt_pen)
+            # for pt in self.body.featureXY.values():
+            #     x, y = pt
+            #     upper_left = QPoint(int(x * ratio - 2), int(y * ratio - 2))
+            #     down_right = QPoint(int(x * ratio + 2), int(y * ratio + 2))
+            #     painter.drawEllipse(QRect(upper_left, down_right))
+
+            # keys = self.body.bdfeatureXY.keys()
+            # keys = ['left_hip','left_shoulder']
+            # pt_pen = QPen(Qt.red, 3, Qt.SolidLine)
+            # painter.setPen(pt_pen)
+            # # for pt in self.body.bdfeatureXY.values():
+            # for key in keys:
+            #     if key not in self.body.bdfeatureXY:
+            #         continue
+            #     pt = self.body.bdfeatureXY[key]
+            #     x, y = pt
+            #     upper_left = QPoint(int(x * ratio - 2), int(y * ratio - 2))
+            #     down_right = QPoint(int(x * ratio + 2), int(y * ratio + 2))
+            #     painter.drawEllipse(QRect(upper_left, down_right))
+
+            # keys = ['right_hip', 'right_shoulder']
+            # pt_pen = QPen(Qt.yellow, 3, Qt.SolidLine)
+            # painter.setPen(pt_pen)
+            # # for pt in self.body.bdfeatureXY.values():
+            # for key in keys:
+            #     if key not in self.body.bdfeatureXY:
+            #         continue
+            #     pt = self.body.bdfeatureXY[key]
+            #     x, y = pt
+            #     upper_left = QPoint(int(x * ratio - 2), int(y * ratio - 2))
+            #     down_right = QPoint(int(x * ratio + 2), int(y * ratio + 2))
+            #     painter.drawEllipse(QRect(upper_left, down_right))
+
+            pt_pen = QPen(Qt.cyan, 3, Qt.SolidLine)
+            painter.setPen(pt_pen)
+            for key,pt in self.body.auto_features.items():
+                # print(key)
+                if pt:
+                    # print(key,pt)
+                    x, y = pt
+                    upper_left = QPoint(int(x * ratio - 2), int(y * ratio - 2))
+                    down_right = QPoint(int(x * ratio + 2), int(y * ratio + 2))
+                    painter.drawEllipse(QRect(upper_left, down_right))
+
+            min_x, max_x, center_x, foot_y, bottom_y =self.body.get_cord_pos()
+            if foot_y:
+                cord_pen = QPen(Qt.blue, 2, Qt.SolidLine)
+                painter.setPen(cord_pen)
+                painter.drawLine(min_x* ratio,bottom_y* ratio,max_x* ratio,bottom_y* ratio)
+                painter.drawLine(min_x* ratio, foot_y* ratio, max_x* ratio, foot_y* ratio)
+                painter.drawLine(center_x* ratio,bottom_y* ratio,center_x* ratio,0)
+
+            colors = [Qt.yellow,Qt.darkYellow,Qt.darkBlue,Qt.darkGreen,Qt.darkRed]
+            extra = self.body.extra
+            if extra:
+                for i in range(len(extra)):
+                    color = colors[i%len(colors)]
+                    pen = QPen(color, 2, Qt.SolidLine)
+                    painter.setPen(pen)
+                    head = True
+                    for pt in extra[i]:
+                        x, y = pt
+                        if not head:
+                            upper_left = QPoint(int(x * ratio - 1), int(y * ratio - 1))
+                            down_right = QPoint(int(x * ratio + 1), int(y * ratio + 1))
+                        else:
+                            upper_left = QPoint(int(x * ratio - 3), int(y * ratio - 3))
+                            down_right = QPoint(int(x * ratio + 3), int(y * ratio + 3))
+                            head = False
+                        painter.drawEllipse(QRect(upper_left, down_right))
+        except Exception as e:
+            print(e)
+
 
 
 class MyDialog(QDialog):
@@ -387,6 +424,11 @@ class MainUI(QMainWindow):
         self.btn_test.setObjectName("btn_test")
         self.btn_test.setText('测试')
 
+        self.btn_outline = QtWidgets.QPushButton(self)
+        self.btn_outline.setGeometry(QRect(1240, 740, 100, 30))
+        self.btn_outline.setObjectName("btn_outline")
+        self.btn_outline.setText('轮廓')
+
         # self.btn_compute = QtWidgets.QPushButton(self)
         # self.btn_compute.setGeometry(QRect(1120, 740, 100, 30))
         # self.btn_compute.setObjectName("btn_compute")
@@ -420,6 +462,7 @@ class MainUI(QMainWindow):
         self.btn_next.clicked.connect(self.next_body)
         # self.btn_compute.clicked.connect(self.compute)
         self.btn_test.clicked.connect(self.test_click)
+        self.btn_outline.clicked.connect(self.outline_click)
 
 
         self.create_dialog()
@@ -486,35 +529,95 @@ class MainUI(QMainWindow):
         self.sbody.save_feature()
 
     def display_other_features(self):
-        exporter = FeatureTan(self.fbody.body, self.sbody.body)
-        exporter.map_front2side(['f_neck_up_L','f_neck_down_L'])
-        self.sbody.update()
+        try:
+            exporter = FeatureTan(self.fbody.body, self.sbody.body)
+            exporter.map_front2side(['f_neck_up_L','f_neck_down_L'])
+            self.sbody.update()
+        except Exception as e:
+            print(e)
 
     def prev_body(self):
-        cur_id = names.index(self.body_id)
-        if cur_id < 0:
-            cur_id = 0
-        if cur_id>0:
-            self.set_body(names[cur_id-1])
-        if cur_id==0:
-            self.set_body(names[-1])
+        try:
+            cur_id = names.index(self.body_id)
+            if cur_id < 0:
+                cur_id = 0
+            if cur_id>0:
+                self.set_body(names[cur_id-1])
+            if cur_id==0:
+                self.set_body(names[-1])
+        except Exception as e:
+            print(e)
 
     def next_body(self):
-        cur_id = names.index(self.body_id)
-        if cur_id < 0:
-            cur_id = 0
-        length = len(names)
-        cur_id = (cur_id+1)%length
-        self.set_body(names[cur_id])
+        try:
+            cur_id = names.index(self.body_id)
+            if cur_id < 0:
+                cur_id = 0
+            length = len(names)
+            cur_id = (cur_id+1)%length
+            self.set_body(names[cur_id])
+        except Exception as e:
+            print(e)
 
     def test_click(self):
-        if self.sbody.start_point and self.sbody.end_point:
-            x1,y1 = int(self.sbody.start_point.x() / ratio), int(self.sbody.start_point.y() / ratio)
-            x2,y2 = int(self.sbody.end_point.x() / ratio), int(self.sbody.end_point.y() / ratio)
-            y = int((y1+y2)/2)
-            y_up,y_down,_=self.sbody.body.get_main_range()
-            r = (y-y_up)/(y_down-y)
-            self.statusbar.showMessage('%d,%d,%d---%f'%(y_up,y,y_down,r))
+        # if self.sbody.start_point and self.sbody.end_point:
+        #     x1,y1 = int(self.sbody.start_point.x() / ratio), int(self.sbody.start_point.y() / ratio)
+        #     x2,y2 = int(self.sbody.end_point.x() / ratio), int(self.sbody.end_point.y() / ratio)
+        #     y = int((y1+y2)/2)
+        #     y_up,y_down,_=self.sbody.body.get_main_range()
+        #     r = (y-y_up)/(y_down-y)
+        #     self.statusbar.showMessage('%d,%d,%d---%f'%(y_up,y,y_down,r))
+        try:
+            body_id=self.lineEdit.text()
+            self.set_body(body_id.strip())
+        except Exception as e:
+            print(e)
+
+
+
+    def outline_click(self):
+        try:
+            outline_exp = OutlineTan(self.fbody.body, self.sbody.body)
+            # front_curves = outline_exp.front_curves()
+            # self.fbody.body.set_extra(front_curves)
+            # side_curves = outline_exp.side_curves()
+            # self.sbody.body.set_extra(side_curves)
+            # self.fbody.body.other_points=outline_exp.front_points()
+            # self.sbody.body.other_points = outline_exp.side_points()
+            self.other_points = outline_exp.front_points()
+            self.s_other_points = outline_exp.side_points()
+
+            # cnt = 0
+            # for pt in other_points:
+            #     cnt += 1
+            #     if cnt==10:
+            #         time.sleep(0.1)
+            #         cnt=0
+            #     self.fbody.body.other_points.append(pt)
+            #     self.fbody.update()
+            self.timer_id = self.startTimer(100, timerType=Qt.VeryCoarseTimer)
+            self.other_index=0
+            self.length = len(self.other_points)
+            # self.sbody.update()
+            # self.s_other_index = 0
+            self.s_length = len(self.s_other_points)
+        except Exception as e:
+            print(e)
+
+    def timerEvent(self, event):
+        for i in range(10):
+            if self.other_index>=self.length:
+                self.killTimer(self.timer_id)
+                self.timer_id = 0
+                break
+            pt = self.other_points[self.other_index]
+            self.fbody.body.other_points.append(pt)
+            if self.other_index < self.s_length:
+                pt = self.s_other_points[self.other_index]
+                self.sbody.body.other_points.append(pt)
+            self.other_index+=1
+        self.fbody.update()
+        self.sbody.update()
 
     def compute(self):
         try:

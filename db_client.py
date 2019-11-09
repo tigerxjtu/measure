@@ -57,7 +57,7 @@ class DB_Client(object):
         self.db_conn.commit()
 
     def insert_outline_queue(self, id, bbiid, folder, body_id, status):
-        sql = 'insert into none_outline_queue values(%(id)s, %(bbiid)s, %(folder)s, %(body_id)s, %(status)s)'
+        sql = 'insert into none_outline_queue(id,bbiid,folder,body_id,STATUS) values(%(id)s, %(bbiid)s, %(folder)s, %(body_id)s, %(status)s)'
         data = {'id':id, 'bbiid':bbiid, 'folder':folder, 'body_id':body_id, 'status': status}
         with self.get_connection().cursor() as cursor:
             data['id']=id
@@ -113,6 +113,35 @@ class DB_Client(object):
             cursor.execute(sql1, key)
             cursor.execute(sql2, key)
         self.db_conn.commit()
+
+    def get_recent_outlines(self,skip,num):
+        sql =  '''select a.id, a.bbiid, a.folder, a.body_id, a.status, b.bbi03 height, b.bbi04 weight, b.bbi02 name 
+                from none_outline_queue_log a, none_body_baseinfo b where a.bbiid=b.id order by a.id desc limit %(skip)s,%(num)s'''
+        params = {"skip":skip, "num":min(num,100)}
+        with self.get_connection().cursor() as cursor:
+            cursor.execute(sql,params)
+            result = []
+            for row in cursor:
+                row['weight'] = float(row['weight'])
+                result.append(row)
+            return result
+
+    def get_outline_log_record(self, bbiid):
+        sql = 'select * from none_outline_queue_log where bbiid=%(bbiid)s'
+        params = {'bbiid':bbiid}
+        with self.get_connection().cursor() as cursor:
+            cursor.execute(sql,params)
+            for row in cursor:
+                return row
+            return None
+
+    def update_outline_status(self,id,status):
+        sql = 'update none_outline_queue_log set status=%(status)s where id=%(id)s'
+        params = {'id':id, 'status':status}
+        with self.get_connection().cursor() as cursor:
+            cursor.execute(sql,params)
+        self.db_conn.commit()
+
 
     #
     #
