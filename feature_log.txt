@@ -1,0 +1,123 @@
+2020-01-17 16:48:36,236 - main_feature.py[line:76] - INFO - program started:------------------------------------
+2020-01-17 16:48:36,392 - main_feature.py[line:84] - INFO - processing record:{'id': 1, 'bbiid': 1000134}
+2020-01-17 16:48:36,408 - main_feature.py[line:93] - ERROR - record process failed: record:{'id': 1, 'bbiid': 1000134}, exceptin:Traceback (most recent call last):
+  File "C:/projects/python/measure/main_feature.py", line 87, in main
+    result,features = process_feature(db, record['bbiid'])
+  File "C:/projects/python/measure/main_feature.py", line 47, in process_feature
+    logger.warn('body not found: bbiid='+bbiid)
+TypeError: must be str, not int
+
+2020-01-17 16:54:44,204 - main_feature.py[line:76] - INFO - program started:------------------------------------
+2020-01-17 16:55:28,491 - main_feature.py[line:84] - INFO - processing record:{'id': 2, 'bbiid': 1002977}
+2020-01-17 16:55:28,631 - main_feature.py[line:93] - ERROR - record process failed: record:{'id': 2, 'bbiid': 1002977}, exceptin:Traceback (most recent call last):
+  File "C:/projects/python/measure/main_feature.py", line 87, in main
+    result,features = process_feature(db, record['bbiid'])
+  File "C:/projects/python/measure/main_feature.py", line 50, in process_feature
+    save_bd_feature(folder,body_id)
+  File "C:/projects/python/measure/main_feature.py", line 38, in save_bd_feature
+    points, rect = body_client.body_points(pic_file)
+  File "C:\projects\python\measure\BodyClient.py", line 67, in body_points
+    parts,rect = self._body_part(filename)
+  File "C:\projects\python\measure\BodyClient.py", line 49, in _body_part
+    image = get_file_content(filename)
+  File "C:\projects\python\measure\utils.py", line 4, in get_file_content
+    with open(filePath, 'rb') as fp:
+FileNotFoundError: [Errno 2] No such file or directory: 'C:\\projects\\python\\data\\measure\\202001\\pics\\U1002977200114173202259\\202001F.jpg'
+
+2020-01-17 16:58:59,805 - main_feature.py[line:76] - INFO - program started:------------------------------------
+2020-01-17 16:59:44,024 - main_feature.py[line:84] - INFO - processing record:{'id': 2, 'bbiid': 1002977}
+2020-01-17 16:59:44,149 - main_feature.py[line:88] - INFO - processing record {'id': 2, 'bbiid': 1002977}, result:2
+2020-01-17 16:59:44,196 - main_feature.py[line:93] - ERROR - record process failed: record:{'id': 2, 'bbiid': 1002977}, exceptin:Traceback (most recent call last):
+  File "C:/projects/python/measure/main_feature.py", line 91, in main
+    db.update_new_feature_result(record['bbiid'],result,msg)
+  File "C:\projects\python\measure\db_client.py", line 260, in update_new_feature_result
+    cursor.execute(sql, params)
+  File "C:\Anaconda3\lib\site-packages\pymysql\cursors.py", line 168, in execute
+    query = self.mogrify(query, args)
+  File "C:\Anaconda3\lib\site-packages\pymysql\cursors.py", line 147, in mogrify
+    query = query % self._escape_args(args, conn)
+ValueError: unsupported format character 'w' (0x77) at index 82
+
+2020-01-17 17:02:28,994 - main_feature.py[line:76] - INFO - program started:------------------------------------
+2020-01-17 17:02:37,540 - main_feature.py[line:84] - INFO - processing record:{'id': 2, 'bbiid': 1002977}
+2020-01-17 17:02:37,602 - main_feature.py[line:88] - INFO - processing record {'id': 2, 'bbiid': 1002977}, result:2
+2020-01-17 17:02:37,633 - main_feature.py[line:93] - ERROR - record process failed: record:{'id': 2, 'bbiid': 1002977}, exceptin:Traceback (most recent call last):
+  File "C:/projects/python/measure/main_feature.py", line 91, in main
+    db.update_new_feature_result(record['bbiid'],result,msg)
+  File "C:\projects\python\measure\db_client.py", line 261, in update_new_feature_result
+    cursor.execute(sql, params)
+  File "C:\Anaconda3\lib\site-packages\pymysql\cursors.py", line 168, in execute
+    query = self.mogrify(query, args)
+  File "C:\Anaconda3\lib\site-packages\pymysql\cursors.py", line 147, in mogrify
+    query = query % self._escape_args(args, conn)
+ValueError: unsupported format character 'w' (0x77) at index 82
+
+2020-01-17 17:11:54,637 - main_feature.py[line:76] - INFO - program started:------------------------------------
+2020-01-17 17:12:01,058 - main_feature.py[line:84] - INFO - processing record:{'id': 2, 'bbiid': 1002977}
+2020-01-17 17:12:01,136 - main_feature.py[line:88] - INFO - processing record {'id': 2, 'bbiid': 1002977}, result:2
+2020-01-17 17:12:01,167 - main_feature.py[line:93] - ERROR - record process failed: record:{'id': 2, 'bbiid': 1002977}, exceptin:Traceback (most recent call last):
+  File "C:/projects/python/measure/main_feature.py", line 91, in main
+    db.update_new_feature_result(record['bbiid'],result,msg)
+  File "C:\projects\python\measure\db_client.py", line 261, in update_new_feature_result
+    cursor.execute(sql, params)
+  File "C:\Anaconda3\lib\site-packages\pymysql\cursors.py", line 168, in execute
+    query = self.mogrify(query, args)
+  File "C:\Anaconda3\lib\site-packages\pymysql\cursors.py", line 147, in mogrify
+    query = query % self._escape_args(args, conn)
+ValueError: unsupported format character 'w' (0x77) at index 82
+
+2020-01-17 17:14:17,635 - main_feature.py[line:76] - INFO - program started:------------------------------------
+2020-01-17 17:14:24,149 - main_feature.py[line:84] - INFO - processing record:{'id': 2, 'bbiid': 1002977}
+2020-01-17 17:14:24,212 - main_feature.py[line:88] - INFO - processing record {'id': 2, 'bbiid': 1002977}, result:2
+2020-01-17 17:14:24,290 - main_feature.py[line:93] - ERROR - record process failed: record:{'id': 2, 'bbiid': 1002977}, exceptin:Traceback (most recent call last):
+  File "C:/projects/python/measure/main_feature.py", line 91, in main
+    db.update_new_feature_result(record['bbiid'],result,msg)
+  File "C:\projects\python\measure\db_client.py", line 261, in update_new_feature_result
+    cursor.execute(sql, params)
+  File "C:\Anaconda3\lib\site-packages\pymysql\cursors.py", line 170, in execute
+    result = self._query(query)
+  File "C:\Anaconda3\lib\site-packages\pymysql\cursors.py", line 328, in _query
+    conn.query(q)
+  File "C:\Anaconda3\lib\site-packages\pymysql\connections.py", line 517, in query
+    self._affected_rows = self._read_query_result(unbuffered=unbuffered)
+  File "C:\Anaconda3\lib\site-packages\pymysql\connections.py", line 732, in _read_query_result
+    result.read()
+  File "C:\Anaconda3\lib\site-packages\pymysql\connections.py", line 1075, in read
+    first_packet = self.connection._read_packet()
+  File "C:\Anaconda3\lib\site-packages\pymysql\connections.py", line 684, in _read_packet
+    packet.check_error()
+  File "C:\Anaconda3\lib\site-packages\pymysql\protocol.py", line 220, in check_error
+    err.raise_mysql_exception(self._data)
+  File "C:\Anaconda3\lib\site-packages\pymysql\err.py", line 109, in raise_mysql_exception
+    raise errorclass(errno, errval)
+pymysql.err.ProgrammingError: (1064, "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '%, message='success' where parentid=1002977' at line 1")
+
+2020-01-17 17:15:59,533 - main_feature.py[line:76] - INFO - program started:------------------------------------
+2020-01-17 17:16:05,954 - main_feature.py[line:84] - INFO - processing record:{'id': 2, 'bbiid': 1002977}
+2020-01-17 17:16:06,032 - main_feature.py[line:88] - INFO - processing record {'id': 2, 'bbiid': 1002977}, result:2
+2020-01-17 17:16:06,079 - main_feature.py[line:93] - ERROR - record process failed: record:{'id': 2, 'bbiid': 1002977}, exceptin:Traceback (most recent call last):
+  File "C:/projects/python/measure/main_feature.py", line 91, in main
+    db.update_new_feature_result(record['bbiid'],result,msg)
+  File "C:\projects\python\measure\db_client.py", line 263, in update_new_feature_result
+    cursor.execute(sql, params)
+  File "C:\Anaconda3\lib\site-packages\pymysql\cursors.py", line 170, in execute
+    result = self._query(query)
+  File "C:\Anaconda3\lib\site-packages\pymysql\cursors.py", line 328, in _query
+    conn.query(q)
+  File "C:\Anaconda3\lib\site-packages\pymysql\connections.py", line 517, in query
+    self._affected_rows = self._read_query_result(unbuffered=unbuffered)
+  File "C:\Anaconda3\lib\site-packages\pymysql\connections.py", line 732, in _read_query_result
+    result.read()
+  File "C:\Anaconda3\lib\site-packages\pymysql\connections.py", line 1075, in read
+    first_packet = self.connection._read_packet()
+  File "C:\Anaconda3\lib\site-packages\pymysql\connections.py", line 684, in _read_packet
+    packet.check_error()
+  File "C:\Anaconda3\lib\site-packages\pymysql\protocol.py", line 220, in check_error
+    err.raise_mysql_exception(self._data)
+  File "C:\Anaconda3\lib\site-packages\pymysql\err.py", line 109, in raise_mysql_exception
+    raise errorclass(errno, errval)
+pymysql.err.ProgrammingError: (1064, "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '%, message='success' where parentid=1002977' at line 1")
+
+2020-01-17 17:16:51,465 - main_feature.py[line:76] - INFO - program started:------------------------------------
+2020-01-17 17:17:06,305 - main_feature.py[line:84] - INFO - processing record:{'id': 2, 'bbiid': 1002977}
+2020-01-17 17:17:06,367 - main_feature.py[line:88] - INFO - processing record {'id': 2, 'bbiid': 1002977}, result:2

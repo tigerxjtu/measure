@@ -54,6 +54,9 @@ class Body(object):
         self.outline_file = None #轮廓点文件
         self.img = None #合成图象
 
+        self.img_h = None
+        self.img_w = None
+
         self.center_x = None
         self.foot_y = None
         self.bottom_y = None
@@ -136,7 +139,7 @@ class Body(object):
 
     def load_outline(self):
         self.load_file()
-        self.outline = get_points(self.outline_file)
+        self.img_w, self.img_h, self.outline = get_points(self.outline_file)
         p = min(self.outline, key=lambda x: x[0])
         self._min_x = p[0]
         if self.tag=='F':
@@ -186,6 +189,9 @@ class Body(object):
             x0_neck =  (auto_features['neck_L'][0] + auto_features['neck_R'][0])//2
             self.features['f_neck_up_L'],self.features['f_neck_up_R'] = self.cut_by_y(y_neck_up,x0_neck)
             self.features['f_neck_down_L'], self.features['f_neck_down_R'] = self.cut_by_y(y_neck_down, x0_neck)
+
+            self.features['f_neck_L'],self.features['f_neck_R']=auto_features['neck_L'],auto_features['neck_R']
+
             self.huiyin_point = auto_features['huiyin']
             self.center_x = self.huiyin_point[0]
             self.features['f_shoulder_L'],self.features['f_shoulder_R']=auto_features['shoulder_L'],auto_features['shoulder_R']
@@ -343,9 +349,9 @@ class Body(object):
     def process_shoulder_feature(self):
         if self.tag == 'F':
             shoulder_L = min_distance_angle(self.outline, self.bdfeatureXY['right_shoulder'],-0.8)
-            shoulder_L = shoulder_L[0],shoulder_L[1] if shoulder_L else None
+            shoulder_L = (shoulder_L[0],shoulder_L[1]) if shoulder_L else None
             shoulder_R = min_distance_angle(self.outline, self.bdfeatureXY['left_shoulder'],0.8)
-            shoulder_R = shoulder_R[0], shoulder_R[1] if shoulder_R else None
+            shoulder_R = (shoulder_R[0], shoulder_R[1]) if shoulder_R else None
             # print(shoulder_L,shoulder_R)
             # self.other_points.append(self.left_shoulder_feature(self.bdfeatureXY['right_shoulder']))
             # self.other_points.append(self.right_shoulder_feature(self.bdfeatureXY['left_shoulder']))
@@ -353,9 +359,9 @@ class Body(object):
             return shoulder_L[0],shoulder_R[0]
         if self.tag == 'B':
             shoulder_L = min_distance_angle(self.outline, self.bdfeatureXY['left_shoulder'], -0.8)
-            shoulder_L = shoulder_L[0], shoulder_L[1] if shoulder_L else None
+            shoulder_L = (shoulder_L[0], shoulder_L[1]) if shoulder_L else None
             shoulder_R = min_distance_angle(self.outline, self.bdfeatureXY['right_shoulder'], 0.8)
-            shoulder_R = shoulder_R[0], shoulder_R[1] if shoulder_R else None
+            shoulder_R = (shoulder_R[0], shoulder_R[1]) if shoulder_R else None
 
             # self.other_points.append(self.left_shoulder_feature(self.bdfeatureXY['left_shoulder']))
             # self.other_points.append(self.right_shoulder_feature(self.bdfeatureXY['right_shoulder']))
@@ -457,7 +463,61 @@ class Body(object):
                     cut_right = p
                 else:
                     cut_right = p if cut_right[0] > p[0] else cut_right
+        if not cut_left:
+            pt1,pt2= self._left_up_neighbors(x0,y),self._left_down_neighbors(x0,y)
+            x_pos=self._intersect_by_y(pt1,pt2,y)
+            cut_left=(x_pos,y)
+        if not cut_right:
+            pt1, pt2 = self._right_up_neighbors(x0, y), self._right_down_neighbors(x0, y)
+            x_pos = self._intersect_by_y(pt1, pt2, y)
+            cut_right = (x_pos, y)
         return cut_left, cut_right
+
+    def _intersect_by_y(self,pt1,pt2,y):
+        left_x, left_y = pt1
+        right_x, right_y = pt2
+        dx = right_x - left_x
+        dy = right_y - left_y
+        x_pos = int(round((y - left_y) * dx / dy + left_x, 0))
+        return x_pos
+
+    # def is_one_line(left_point, right_point, cur_point):
+    #     left_x, left_y = left_point
+    #     right_x, right_y = right_point
+    #     cur_x, cur_y = cur_point
+    #     if left_x == right_x:
+    #         return cur_x == left_x
+    #     dx = right_x - left_x
+    #     dy = right_y - left_y
+    #     y_pos = y_pos = int(round((cur_x - left_x) * dy / dx + left_y, 0))
+
+    def _left_up_neighbors(self,x0,y0,thresh=30):
+        points = filter(lambda x: x[0]<x0 and x[1]<y0, self.outline)
+        points = list(points)
+        distances=[abs(p[1]-y0) for p in points]
+        index=np.argmin(distances)
+        return points[index]
+
+    def _left_down_neighbors(self,x0,y0,thresh=30):
+        points = filter(lambda x: x[0]<x0 and x[1]>y0, self.outline)
+        points = list(points)
+        distances=[abs(p[1]-y0) for p in points]
+        index=np.argmin(distances)
+        return points[index]
+
+    def _right_up_neighbors(self,x0,y0,thresh=30):
+        points = filter(lambda x: x[0]>x0 and x[1]<y0, self.outline)
+        points=list(points)
+        distances=[abs(p[1]-y0) for p in points]
+        index=np.argmin(distances)
+        return points[index]
+
+    def _right_down_neighbors(self,x0,y0,thresh=30):
+        points = filter(lambda x: x[0]>x0 and x[1]>y0, self.outline)
+        points = list(points)
+        distances=[abs(p[1]-y0) for p in points]
+        index=np.argmin(distances)
+        return points[index]
 
     def cut_outline_points(self,left_point, right_point):
         left_x,left_y=left_point

@@ -103,7 +103,7 @@ class Body(object):
 
     def load_outline(self):
         self.load_file()
-        self.outline = get_points(self.outline_file)
+        _,_,self.outline = get_points(self.outline_file)
         p = min(self.outline, key=lambda x: x[0])
         self._min_x = p[0]
         if self.tag=='F':

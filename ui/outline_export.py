@@ -340,8 +340,8 @@ class OutlineTransformer(object):
             cnt += len(curv.curves)
         return cnt
 
-    def print_summary(self,curves):
-        if not DEBUG:
+    def print_summary(self,curves, debug=DEBUG):
+        if not debug:
             return
         cnt = self.cnt_curves(curves)
         if cnt < self.pts:
@@ -393,6 +393,9 @@ class OutlineTransformer(object):
 
     def is_neighbor(self,pt1,pt2):
         return abs(pt1[0]-pt2[0])<=1 and abs(pt1[1]-pt2[1])<=1
+
+    def distance_l1(self,pt1,pt2):
+        return abs(pt1[0]-pt2[0])+abs(pt1[1]-pt2[1])
 
     def comine_vetex(self, curves):
         if not curves:
@@ -461,10 +464,14 @@ class OutlineTransformer(object):
         min_dis = min(ds,key=lambda x:x[1])
         return min_dis[0],min_dis[1]
 
-    def prob_merge(self,left_curv,right_curv,thresh=50):
+    def prob_merge(self,left_curv,right_curv,thresh=50,max_thresh=200):
         index,dis = self.distance(left_curv.start_point,left_curv.last_point,right_curv.start_point,right_curv.last_point)
         if dis<=thresh:
             return True,index
+        cnt=min(len(left_curv.curves),len(right_curv.curves))
+        if cnt>max_thresh:
+            if dis<=max_thresh:
+                return True,index
         return False,None
 
     def do_force_connect(self,curves):
@@ -478,7 +485,7 @@ class OutlineTransformer(object):
         # first = True
         merged = False
         for curv in curves[1:]:
-            flag, index = self.prob_merge(prev_curv, curv)
+            flag, index = self.prob_merge(prev_curv, curv, thresh=100, max_thresh=200)
             # index += 2
             if flag:
                 # if index<2:
@@ -499,7 +506,7 @@ class OutlineTransformer(object):
                 remain_curves.append(prev_curv)
                 prev_curv=curv
         remain_curves.append(prev_curv)
-        final_curves=self.filter_small_curves(remain_curves,30)
+        final_curves=self.filter_small_curves(remain_curves,50)
         if merged:
             return self.do_force_connect(final_curves)
         else:
@@ -536,8 +543,9 @@ class OutlineTransformer(object):
         end = points[-1]
         if start[0]==end[0] and start[1]==end[1]:
             points.pop(0)
-            start = points[0]
-            end = points[-1]
+            # start = points[0]
+            # end = points[-1]
+            return self._order_points(points)
         index = 0
         for pt in points:
             if pt[0]==self.top_point[0] and pt[1]==self.top_point[1]:
@@ -551,8 +559,9 @@ class OutlineTransformer(object):
             right_points = points[:index+1]
             left_points = points[index+1:]
             temp_points = right_points[::-1]+left_points[::-1]
+        #上面无法保证顺时针轮廓，新增判断做进一步处理
         head_point = temp_points[0]
-        side_point = temp_points[5]
+        side_point = temp_points[30]
         if head_point[0] > side_point[0]:
             return temp_points[::-1]
         return temp_points
@@ -567,6 +576,24 @@ class OutlineTransformer(object):
             # points.pop(0)
             # return points[::-1]
             return self._order_points(points)
+
+        # it_curves = filter(lambda x:len(x.curves)>300,curves )
+        # curves = [curv for curv in it_curves]
+        # prev_curv = curves[0]
+        # for curv in curves[1:]:
+        #     flag, index = self.prob_merge(prev_curv, curv, thresh=150)
+        #     if flag:
+        #         left_index, right_index = index
+        #         if left_index == 0:
+        #             prev_curv.reverse()
+        #         if right_index == 0:
+        #             prev_curv.add_points(curv.curves)
+        #         else:
+        #             prev_curv.add_points(curv.curves[::-1])
+        #     else:
+        #         prev_curv = max([prev_curv, curv], key=lambda x: len(x.curves))
+        # return self._order_points(prev_curv.curves)
+
         curves = sorted(final_curves,key=lambda x: len(x.curves),reverse=True)
         curv1 = curves[0]
         curv2 = curves[1]
@@ -626,19 +653,81 @@ class OutlineTransformer(object):
         points.pop(0)
         return self.down_order_points(points)
 
-    def merge_curves(self,curves):
-        new_curves, flag = self.comine_vetex(curves)
-        while flag:
-            new_curves, flag = self.comine_vetex(new_curves)
-        self.print_summary(new_curves)
-        new_curves = self.connect_vetex(new_curves)
-        self.print_summary(new_curves)
-        new_curves = self.connect_tail(new_curves)
-        self.print_summary(new_curves)
-        new_curves = self.filter_small_curves(new_curves)
+    #轮廓合并 ---不用了，被后面的优化了
+    # def merge_curves(self,curves):
+    #     new_curves, flag = self.comine_vetex(curves)
+    #     while flag:
+    #         new_curves, flag = self.comine_vetex(new_curves)
+    #     self.print_summary(new_curves)
+    #     new_curves = self.connect_vetex(new_curves)
+    #     self.print_summary(new_curves)
+    #     new_curves = self.connect_tail(new_curves)
+    #     self.print_summary(new_curves)
+    #     new_curves = self.filter_small_curves(new_curves)
+    #     return new_curves
+
+    #轮廓合并算法优化
+    def merge_curves(self, curves, small_thresh=5):
+        thresh=1
+        new_curves=curves
+        while thresh<small_thresh:
+            new_curves=self._merge_curves_1st(new_curves,thresh)
+            # self.print_summary(new_curves,True)
+            thresh+=1
+        return self.filter_small_curves(new_curves,small_thresh)
+
+    def _merge_curves_1st(self,curves,thresh=1):
+        if not curves or len(curves)==1:
+            return curves
+        new_curves=[]
+        # left_curves=[]
+        prev_curv=curves[0]
+        for curv in curves[1:]:
+            if self._is_circle(curv,thresh):
+                continue
+            index,dis=self.distance(prev_curv.start_point,prev_curv.last_point,curv.start_point,curv.last_point)
+            if dis<=thresh:
+                left_index, right_index = index
+                if left_index == 0:
+                    prev_curv.reverse()
+                if right_index == 0:
+                    if self.is_same(prev_curv.last_point,curv.start_point):
+                        prev_curv.add_points(curv.curves[1:])
+                    else:
+                        prev_curv.add_points(curv.curves)
+                else:
+                    points=curv.curves[::-1]
+                    if self.is_same(prev_curv.last_point,points[0]):
+                        points.pop()
+                    prev_curv.add_points(points)
+            else:
+                new_curves.append(prev_curv)
+                prev_curv=curv
+        new_curves.append(prev_curv)
+        # if thresh<2:
+        #     return
+        # # new_curves=self.merge_curves(new_curves,2)
+        # new_curves=self.filter_small_curves(new_curves)
         return new_curves
 
+    def _is_circle(self,curve,thresh=1):
+        if len(curve.curves)>10 and len(curve.curves)<500:
+            if self.dis(curve.start_point,curve.last_point)<=thresh:
+                return True
+        return False
 
+
+
+class OutlineBody(object):
+    def __init__(self, body):
+        self.body = body
+
+    def outline_points(self):
+        outline_transformer = OutlineTransformer(self.body.outline, self.body.top_head_point,self.body.body_id)
+        curves = outline_transformer.scan()
+        curves = outline_transformer.merge_curves(curves)
+        curve_points = outline_transformer.force_connect(curves)
+        return curve_points
 
 
 class OutlineTan(object):
@@ -679,10 +768,14 @@ class OutlineTan(object):
 
 
     def export_front(self,file_path):
+        deb=False
         outline_transformer = OutlineTransformer(self.front_body.outline, self.front_body.top_head_point,self.front_body.body_id)
         curves = outline_transformer.scan()
+        outline_transformer.print_summary(curves,deb)
         curves = outline_transformer.merge_curves(curves)
+        outline_transformer.print_summary(curves, deb)
         curve_points = outline_transformer.force_connect(curves)
+        # print(len(curve_points))
         if self.front_body.bottom_y and self.front_body.center_x:
             cent_x = self.front_body.center_x
             bottom_y = self.front_body.bottom_y

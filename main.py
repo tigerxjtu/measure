@@ -20,6 +20,9 @@ from model.Yao3sideModel import Yao3sideModel
 
 from ui.outline_export import OutlineTransformer,OutlineTan
 from ui.feature_export import FeatureTan
+import traceback
+
+import multiprocessing
 
 def save_feature(name,folder):
     tags = ['F', 'S', 'B']
@@ -47,13 +50,21 @@ def process_body(name,folder,bbiid,height):
     yao = model.predict()
     return neck,shoulder,tun,xiong,yao
 
+def insert_queue(db,bbiid):
+    # db.insert_new_outline(bbiid)
+    # db.insert_new_feature(bbiid)
+    # db.commit()
+    pass
+
 def process_record(db,bbiid):
     pic_file = db.get_pic_file(bbiid)
     if not pic_file:
-        logger.warn('body not found: bbiid='+bbiid)
+        logger.warn('body not found: bbiid='+str(bbiid))
         return None
     folder,name = parse_file(pic_file)
     result = db.get_user_info(bbiid)
+    save_feature(name,folder)
+    insert_queue(db,bbiid)
     if not result:
         logger.warn('user not found: id=' + bbiid)
         return None
@@ -94,13 +105,10 @@ def export_outline_tan(folder, body_id, person_id):
         flag -= 2
     return flag
 
-
-
-
-if __name__ == '__main__':
-    db=DB_Client()
+def main():
+    db = DB_Client()
     logger.info('program started:------------------------------------')
-    while(True):
+    while (True):
         try:
             records = db.get_queue_records()
             # logger.info('get %d records'%len(records))
@@ -108,19 +116,20 @@ if __name__ == '__main__':
             processed = False
             for record in records:
                 processed = True
-                logger.info('processing record:'+str(record))
+                logger.info('processing record:' + str(record))
                 exp_status = False
                 try:
-                    data,folder,body_id=process_record(db,record['bbiid'])
-                    logger.info('processing result, input:%s, output:%s '%(record,data))
+                    data, folder, body_id = process_record(db, record['bbiid'])
+                    logger.info('processing result, input:%s, output:%s ' % (record, data))
                     if data:
                         db.process_result(record['id'], data)
                         exp_status = export_outline_tan(folder, body_id, record['bbiid'])
-                        db.insert_outline_queue(record['id'],record['bbiid'],folder,body_id,exp_status)
+                        db.insert_outline_queue(record['id'], record['bbiid'], folder, body_id, exp_status)
                     else:
                         db.del_queue(record['id'])
                 except Exception as e:
-                    logger.error('record process failed: record:%s, exceptin:%s'%(record,str(e)))
+                    logger.error('record process failed: record:%s, exceptin:%s' % (record, str(e)))
+                    db.fail_queue(record['id'],traceback.format_exc())
                     db.del_queue(record['id'])
 
             if not processed:
@@ -129,3 +138,8 @@ if __name__ == '__main__':
         except Exception as e:
             logger.error('exception occured:' + str(e))
             time.sleep(2)
+
+
+if __name__ == '__main__':
+    multiprocessing.freeze_support()
+    main()

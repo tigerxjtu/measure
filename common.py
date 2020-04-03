@@ -1,6 +1,7 @@
 import json
 import os
 from Config import config
+from NoBodyException import NoBodyException
 
 # base_path = r'C:\projects\python\measure\ui\data'
 # path1=r'C:\projects\python\measure\ui\data\txtdata'
@@ -47,10 +48,18 @@ def get_points(file):
         content = f.read()
         data = json.loads(content)
         points = data['featureXY']
-        return [(int(p['x']), int(p['y'])) for p in points]
+        if not points:
+            raise NoBodyException('no outline points in file %s' % file)
+        width = data['width']
+        height = data['height']
+        return width, height, [(int(p['x']), int(p['y'])) for p in points]
 
 # names=list_name(path1)
 # pics=list_pic_files(path2)
+if __name__ == '__main__':
+    file='abc'
+    ex = NoBodyException('no outline in file %s' % file)
+    raise ex
 
 
 

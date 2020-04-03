@@ -21,6 +21,7 @@ from model.Hip3sideModel import Hip3sideModel
 from model.Xiong3sideModel import Xiong3sideModel
 # from model2.Xiong3sideModel import Xiong3sideModel
 from model.Yao3sideModel import Yao3sideModel
+import traceback
 
 measure_items_front=['F脖子上L','F脖子上R',
                'F脖子下L','F脖子下R',
@@ -214,72 +215,75 @@ class BodyFrame(QFrame):
         self.move_line(dx,dy)
 
     def paintEvent(self, event):
-        if not self.body:
-            return
-        painter = QPainter(self)
-        painter.drawPixmap(0, 0, dst_size[0], dst_size[1],self.pix_img);
-        pen = QPen(Qt.red, 2, Qt.SolidLine)
-        if self.start_point and self.end_point:
-            painter.setPen(pen)
-            painter.drawLine(self.start_point,self.end_point)
-            cent_x=(self.start_point.x()+self.end_point.x())//2
-            cent_y=(self.start_point.y()+self.end_point.y())//2
-            painter.drawLine(cent_x,cent_y,cent_x,0)
+        try:
+            if not self.body:
+                return
+            painter = QPainter(self)
+            painter.drawPixmap(0, 0, dst_size[0], dst_size[1],self.pix_img);
+            pen = QPen(Qt.red, 2, Qt.SolidLine)
+            if self.start_point and self.end_point:
+                painter.setPen(pen)
+                painter.drawLine(self.start_point,self.end_point)
+                cent_x=(self.start_point.x()+self.end_point.x())//2
+                cent_y=(self.start_point.y()+self.end_point.y())//2
+                painter.drawLine(cent_x,cent_y,cent_x,0)
 
-        pt_pen = QPen(Qt.blue, 3, Qt.SolidLine)
-        painter.setPen(pt_pen)
-        for point in self.body.features.values():
-            x,y=point
-            upper_left=QPoint(int(x*ratio-2),int(y*ratio-2))
-            down_right=QPoint(int(x*ratio+2),int(y*ratio+2))
-            painter.drawEllipse(QRect(upper_left,down_right))
-        if self.body.top_head_point:
-            x, y = self.body.top_head_point
-            upper_left = QPoint(int(x * ratio - 2), int(y * ratio - 2))
-            down_right = QPoint(int(x * ratio + 2), int(y * ratio + 2))
-            painter.drawEllipse(QRect(upper_left, down_right))
-        if self.body.left_finger:
-            x, y = self.body.left_finger
-            upper_left = QPoint(int(x * ratio - 2), int(y * ratio - 2))
-            down_right = QPoint(int(x * ratio + 2), int(y * ratio + 2))
-            painter.drawEllipse(QRect(upper_left, down_right))
-        if self.body.left_finger:
-            x, y = self.body.right_finger
-            upper_left = QPoint(int(x * ratio - 2), int(y * ratio - 2))
-            down_right = QPoint(int(x * ratio + 2), int(y * ratio + 2))
-            painter.drawEllipse(QRect(upper_left, down_right))
-        if self.body.huiyin_point:
-            x, y = self.body.huiyin_point
-            upper_left = QPoint(int(x * ratio - 2), int(y * ratio - 2))
-            down_right = QPoint(int(x * ratio + 2), int(y * ratio + 2))
-            painter.drawEllipse(QRect(upper_left, down_right))
+            pt_pen = QPen(Qt.blue, 3, Qt.SolidLine)
+            painter.setPen(pt_pen)
+            for point in self.body.features.values():
+                x,y=point
+                upper_left=QPoint(int(x*ratio-2),int(y*ratio-2))
+                down_right=QPoint(int(x*ratio+2),int(y*ratio+2))
+                painter.drawEllipse(QRect(upper_left,down_right))
+            if self.body.top_head_point:
+                x, y = self.body.top_head_point
+                upper_left = QPoint(int(x * ratio - 2), int(y * ratio - 2))
+                down_right = QPoint(int(x * ratio + 2), int(y * ratio + 2))
+                painter.drawEllipse(QRect(upper_left, down_right))
+            if self.body.left_finger:
+                x, y = self.body.left_finger
+                upper_left = QPoint(int(x * ratio - 2), int(y * ratio - 2))
+                down_right = QPoint(int(x * ratio + 2), int(y * ratio + 2))
+                painter.drawEllipse(QRect(upper_left, down_right))
+            if self.body.left_finger:
+                x, y = self.body.right_finger
+                upper_left = QPoint(int(x * ratio - 2), int(y * ratio - 2))
+                down_right = QPoint(int(x * ratio + 2), int(y * ratio + 2))
+                painter.drawEllipse(QRect(upper_left, down_right))
+            if self.body.huiyin_point:
+                x, y = self.body.huiyin_point
+                upper_left = QPoint(int(x * ratio - 2), int(y * ratio - 2))
+                down_right = QPoint(int(x * ratio + 2), int(y * ratio + 2))
+                painter.drawEllipse(QRect(upper_left, down_right))
 
-        pt_pen = QPen(Qt.green, 3, Qt.SolidLine)
-        painter.setPen(pt_pen)
-        for pt in self.body.other_points:
-            x, y = pt
-            upper_left = QPoint(int(x * ratio - 2), int(y * ratio - 2))
-            down_right = QPoint(int(x * ratio + 2), int(y * ratio + 2))
-            painter.drawEllipse(QRect(upper_left, down_right))
-
-        min_x, max_x, center_x, foot_y, bottom_y =self.body.get_cord_pos()
-        if foot_y:
-            cord_pen = QPen(Qt.blue, 2, Qt.SolidLine)
-            painter.setPen(cord_pen)
-            painter.drawLine(min_x* ratio,bottom_y* ratio,max_x* ratio,bottom_y* ratio)
-            painter.drawLine(min_x* ratio, foot_y* ratio, max_x* ratio, foot_y* ratio)
-            painter.drawLine(center_x* ratio,bottom_y* ratio,center_x* ratio,0)
-
-        pt_pen = QPen(Qt.cyan, 3, Qt.SolidLine)
-        painter.setPen(pt_pen)
-        for key, pt in self.body.auto_features.items():
-            # print(key)
-            if pt:
-                # print(key,pt)
+            pt_pen = QPen(Qt.green, 3, Qt.SolidLine)
+            painter.setPen(pt_pen)
+            for pt in self.body.other_points:
                 x, y = pt
                 upper_left = QPoint(int(x * ratio - 2), int(y * ratio - 2))
                 down_right = QPoint(int(x * ratio + 2), int(y * ratio + 2))
                 painter.drawEllipse(QRect(upper_left, down_right))
+
+            min_x, max_x, center_x, foot_y, bottom_y =self.body.get_cord_pos()
+            if foot_y:
+                cord_pen = QPen(Qt.blue, 2, Qt.SolidLine)
+                painter.setPen(cord_pen)
+                painter.drawLine(min_x* ratio,bottom_y* ratio,max_x* ratio,bottom_y* ratio)
+                painter.drawLine(min_x* ratio, foot_y* ratio, max_x* ratio, foot_y* ratio)
+                painter.drawLine(center_x* ratio,bottom_y* ratio,center_x* ratio,0)
+
+            pt_pen = QPen(Qt.cyan, 3, Qt.SolidLine)
+            painter.setPen(pt_pen)
+            for key, pt in self.body.auto_features.items():
+                # print(key)
+                if pt:
+                    # print(key,pt)
+                    x, y = pt
+                    upper_left = QPoint(int(x * ratio - 2), int(y * ratio - 2))
+                    down_right = QPoint(int(x * ratio + 2), int(y * ratio + 2))
+                    painter.drawEllipse(QRect(upper_left, down_right))
+        except Exception as e:
+            print(traceback.format_exc())
 
 
 class MyDialog(QDialog):
@@ -494,9 +498,14 @@ class MainUI(QMainWindow):
         self.sbody.save_feature()
 
     def display_other_features(self):
-        exporter = FeatureTan(self.fbody.body, self.sbody.body)
-        exporter.map_front2side(['f_neck_up_L','f_neck_down_L'])
-        self.sbody.update()
+        try:
+            # exporter = FeatureTan(self.fbody.body, self.sbody.body)
+            # exporter.map_front2side(['f_neck_up_L','f_neck_down_L'])
+            # self.sbody.update()
+            body_id = self.lineEdit.text()
+            self.set_body(body_id.strip())
+        except Exception as e:
+            print(traceback.format_exc())
 
     def prev_body(self):
         cur_id = names.index(self.body_id)
@@ -564,7 +573,8 @@ class MainUI(QMainWindow):
                 self.lbl_yao.setText('')
                 self.lbl_tun.setText('')
         except Exception as e:
-            print(e)
+            # print(e)
+            print(traceback.format_exc())
             QMessageBox.information(self, 'error',str(e))
 
 
@@ -574,7 +584,8 @@ class MainUI(QMainWindow):
             file_path = os.path.join(path3, '%s_FL.txt' % (self.body_id))
             exporter.write_file(file_path)
         except Exception as e:
-            print(e)
+            # print(e)
+            print(traceback.format_exc())
             QMessageBox.information(self, 'error',str(e))
         try:
             # outline_transformer=OutlineTransformer(self.fbody.body.outline,self.fbody.body.top_head_point)
@@ -595,7 +606,8 @@ class MainUI(QMainWindow):
             file_path = os.path.join(path3, '%s_SC.txt' % (self.body_id))
             outline_exp.export_side(file_path)
         except Exception as e:
-            print(e)
+            # print(e)
+            print(traceback.format_exc())
             QMessageBox.information(self, 'error',str(e))
 
     def keyPressEvent(self, event):

@@ -24,18 +24,35 @@
 # else:
 #     print('no break',i)
 
+#---------------------------------------------
+# a=[1,2,3,4]
+# for i,ele in enumerate(a[1:]):
+#     print(i,ele)
+#
+# items = ['a','b','c','d']
+#
+# import numpy as np
+# a = np.array([1,2,3])
+# b = np.array([4,5,6])
+# print(zip(a,b))
+# for i,j in zip(a,b):
+#     print(i,j)
+#
+# print(np.mean([1,2,3]))
+# print('%s=%%(%s)s' % (1, 2))
+#
+# def _join_cols(update_dict):
+#     cols_expr = ['%s=%%(%s)s' % (k, k) for k in update_dict.keys()]
+#     return ','.join(cols_expr)
+#
+# update_dict=params = {'bbiid': 1, 'front': 2, 'side': 3, 'back':4}
+# print(_join_cols(update_dict))
+#
+# import json
+# print(json.dumps(None))
+# print(json.dumps([(1,2),[100,99]]))
 
-a=[1,2,3,4]
-for i,ele in enumerate(a[1:]):
-    print(i,ele)
-
-items = ['a','b','c','d']
-
+#-------------------------------
 import numpy as np
-a = np.array([1,2,3])
-b = np.array([4,5,6])
-print(zip(a,b))
-for i,j in zip(a,b):
-    print(i,j)
-
-print(np.mean([1,2,3]))
+a=[1,2,3,4]
+print(np.argmin(a))

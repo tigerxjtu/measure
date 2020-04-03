@@ -51,14 +51,14 @@ def min_feature(outline,lower_pct,upper_pct,top_y,bottom_y):
     return min_feature_range(outline,lower_y,upper_y) # x_left,x_right, y
 
 #判断两点连线和水平夹角是否为angle
-def on_line(pt1, pt2, angle):
+def on_line(pt1, pt2, angle,delta=2):
     x1,y1 = pt1
     x2,y2 = pt2
     if x1==x2:
         return y1==y2
     dx = x2 - x1
     y = round_int(y1 - angle * dx)
-    return abs(y-y2)<=1
+    return abs(y-y2)<=delta
 
 #根据mean_x在点集points内找到左边最近和右边最近的点
 def get_two_points(points,mean_x):

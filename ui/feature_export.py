@@ -66,6 +66,37 @@ S胸R:{}
         self.front_body = front_body
         self.side_body = side_body
         self.data = []
+        self._map={}
+        self.init_map()
+
+    def init_map(self):
+        # self._map['']='top_x'  #'头顶x坐标',
+        self._map['f_neck_R'] = 'neck_r_t'  # '右边脖子上x坐标',
+        # self._map['f_neck_up_R']='neck_r_t' #'右边脖子上x坐标',
+        self._map['f_neck_down_R']='neck_r_b' # '右边脖子下x坐标',
+        self._map['f_shoulder_R']='shoulder_r' # '右边肩膀x坐标',
+        # self._map['f_wrist_right_R']='hand_r' # '右边手尖x',
+        self._map['f_yewo_R']='armpit_r' # '右边腋窝x坐标',
+        # self._map['']='perineum_x' # '会阴x坐标',
+        self._map['f_yewo_L']='armpit_l' # '左边腋窝x坐标',
+        # self._map['f_wrist_left_L']='hand_l' # '左边手尖x',
+        self._map['f_shoulder_L']='shoulder_l' # '左边肩膀x坐标',
+        self._map['f_neck_down_L']='neck_l_b' # '左边脖子下x坐标',
+
+        self._map['f_neck_L'] = 'neck_l_t'  # '左边脖子上x坐标',
+        # self._map['f_neck_up_L']='neck_l_t' # '左边脖子上x坐标',
+        # self._map['']='top_s_x' # '侧面头顶x坐标',
+        self._map['s_xiong_R']='bust_s'
+        # self._map['']='bust_s' # '侧面胸高交点x坐标',
+        self._map['s_yao_R']='waist_s' # '侧面腰高交点x坐标',
+        self._map['s_tun_R']='hip_s' # '侧面臀围高度交点x坐标',
+        self._map['s_neck_up_L'] = 'neck_s_t'  # '侧面脖子上交点x坐标',
+        self._map['s_neck_up_R'] = 'neck_s_b'  # '侧面脖子下交点x坐标',
+        # self._map['s_neck_up_R'] = 'neck_s_t'  # '侧面脖子上交点x坐标',
+        # self._map['s_neck_up_L'] = 'neck_s_b'  # '侧面脖子下交点x坐标',
+        # self._map['']='neck_angle' # '侧面脖子角度',
+        # self._map['']='foot_line' # '正面脚底线高度',
+        # self._map['']='foot_line_s' # '侧面脚底线高度',
 
     def map_front2side(self,features):
         f_height = self.front_body.bottom_y - self.front_body.top_head_point[1]
@@ -150,6 +181,38 @@ S胸R:{}
         self.data.append(s_height)  # 像素身高S
         print(len(self.data))
         return self.data
+
+    def export_features(self):
+        features={}
+        for k,v in self._map.items():
+            body=self.front_body
+            if k.startswith('s_'):
+                body=self.side_body
+            features['%s_x'%v],features['%s_y'%v]=body.features[k]
+
+
+        features['top_x'],features['top_y']=self.front_body.top_head_point  #'头顶x坐标',
+        features['hand_r_x'], features['hand_r_y'] = self.front_body.right_finger
+        # self._map['f_wrist_right_R']='hand_r' # '右边手尖x',
+        features['perineum_x'], features['perineum_y'] = self.front_body.huiyin_point
+        features['hand_l_x'], features['hand_l_y'] = self.front_body.left_finger
+        # self._map['f_wrist_left_L']='hand_l' # '左边手尖x',
+        features['top_s_x'], features['top_s_y'] = self.side_body.top_head_point
+
+        # self._map['']='bust_s' # '侧面胸高交点x坐标',
+
+
+        # self._map['']='neck_angle' # '侧面脖子角度',
+        features['neck_angle']=0.3
+        # features['foot_line']=self.front_body.bottom_y - self.front_body.foot_y
+        # features['foot_line_s'] = self.side_body.bottom_y - self.side_body.foot_y
+        # features['foot_line'] = self.front_body.foot_y + 10
+        # features['foot_line_s'] = self.side_body.foot_y + 10
+        features['foot_line'] = 100
+        features['foot_line_s'] = 100
+
+        features['deflection'], features['deflection_s']=0,0
+        return features
 
 if __name__ == '__main__':
     # f=FeatureTan(None,None)
