@@ -95,25 +95,48 @@ class BodyClient(object):
 body_client = BodyClient()
 
 if __name__ == '__main__':
-    file_path = '201005100004_Front.jpg'#r'C:\dataguru_new\pics\201810\U1000208181024132310246F.jpg' U1003006200305142317483F
-    file_path = r'C:\dataguru_new\pics\201810\U1000208181024132310246F.jpg'
-    file_path = r'C:\projects\python\data\measure\202003\U1003011200305150713803S.jpg'
-    file_path = r'C:\projects\python\data\measure\YS20200318A\CHL1.jpg'
+    # file_path = '201005100004_Front.jpg'#r'C:\dataguru_new\pics\201810\U1000208181024132310246F.jpg' U1003006200305142317483F
+    # file_path = r'C:\dataguru_new\pics\201810\U1000208181024132310246F.jpg'
+    # file_path = r'C:\projects\python\data\measure\202003\U1003011200305150713803S.jpg'
+    # file_path = r'C:\projects\python\data\measure\YS20200318A\CHL1.jpg'
+    #
+    # img=cv2.imread(file_path)
+    # file_path=r'C:\projects\python\data\measure\YS20200318A\tmp.jpg'
+    # print(img.shape)
+    # h,w=img.shape[:2]
+    # img=cv2.resize(img,(w//2,h//2))
+    # cv2.imwrite(file_path,img)
+    #
+    # body_points, outline_points, rect = body_client.process_body(file_path)
+    # img = cv2.imread(file_path)
+    # for point in outline_points:
+    #     cv2.circle(img,point,1,(0,0,255))
+    # for point in body_points.values():
+    #     cv2.circle(img, (int(point[0]),int(point[1])), 3, (255, 0, 0))
+    # x_left, y_top, w, h = rect
+    # cv2.rectangle(img, (x_left, y_top), (x_left + w, y_top + h), (0, 255, 0), 2)
+    # cv2.imshow("img", img)
+    # cv2.waitKey()
+    pic_file=r'C:\projects\python\data\measure\202003\pics\U1003016200306143050252F.jpg'
+    txt_file=r'C:\projects\python\data\measure\202003\txtdata\U1003016200306143050252F1.txt'
+    # points, width, height = body_client.body_seg(pic_file)
+    image = get_file_content(pic_file)
+    res = body_client.client.bodySeg(image)
+    labelmap = base64.b64decode(res['labelmap'])
+    nparr_labelmap = np.fromstring(labelmap, np.uint8)
+    labelmapimg = cv2.imdecode(nparr_labelmap, 1)
+    cv2.imwrite('outline.png',labelmapimg)
 
-    img=cv2.imread(file_path)
-    file_path=r'C:\projects\python\data\measure\YS20200318A\tmp.jpg'
-    print(img.shape)
-    h,w=img.shape[:2]
-    img=cv2.resize(img,(w//2,h//2))
-    cv2.imwrite(file_path,img)
-
-    body_points, outline_points, rect = body_client.process_body(file_path)
-    img = cv2.imread(file_path)
-    for point in outline_points:
-        cv2.circle(img,point,1,(0,0,255))
-    for point in body_points.values():
-        cv2.circle(img, (int(point[0]),int(point[1])), 3, (255, 0, 0))
-    x_left, y_top, w, h = rect
-    cv2.rectangle(img, (x_left, y_top), (x_left + w, y_top + h), (0, 255, 0), 2)
-    cv2.imshow("img", img)
-    cv2.waitKey()
+    img=labelmapimg
+    x, y = 0, 0
+    h, w = img.shape[:2]
+    body = img[y:y + h, x:x + w]
+    edges = cv2.Canny(body, 10, 100)
+    edgesmat = np.mat(edges)
+    points = [(j + x, i + y) for i in range(h) for j in range(w) if edgesmat[i, j] == 255]
+    im_new_labelmapimg = np.where(labelmapimg == 1, 255, labelmapimg)
+    pts = [dict(x=p[0], y=p[1]) for p in points]
+    points = dict(width=w, height=h, featureXY=pts)
+    import json
+    with open(txt_file, 'w') as fp:
+        json.dump(points, fp)

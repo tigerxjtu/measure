@@ -13,6 +13,7 @@ def get_file_name(name,tag):
     file_name='%s%s1.txt'%(name,tag)
     pic_name='%s%s.jpg'%(name,tag)
     # print(file_name,pic_name,pics[pic_name])
+    # print(pics)
     return os.path.join(path1,file_name),pics[pic_name]
 
 def get_user_info(file_path):

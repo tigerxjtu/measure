@@ -451,10 +451,13 @@ class MainUI(QMainWindow):
     def set_body(self,body_id):
         # if not self.fboard:
         #     self.init_body_frame()
-        self.body_id = body_id
-        self.lineEdit.setText(body_id)
-        self.fbody.set_body(body_id)
-        self.sbody.set_body(body_id)
+        try:
+            self.body_id = body_id
+            self.lineEdit.setText(body_id)
+            self.fbody.set_body(body_id)
+            self.sbody.set_body(body_id)
+        except :
+            print(traceback.format_exc())
 
     def init_body_frame(self):
         self.fbody = BodyFrame(self)
@@ -579,6 +582,17 @@ class MainUI(QMainWindow):
 
 
     def export_features(self):
+        # try:
+        #     self.fbody.body.load_export_features()
+        #     self.sbody.body.load_export_features()
+        #     exporter = FeatureTan(self.fbody.body, self.sbody.body)
+        #     features = exporter.export_features()
+        #     # print(features['foot_line'], features['foot_line_s'])
+        # except Exception as e:
+        #     # print(e)
+        #     print(traceback.format_exc())
+        # return
+
         try:
             exporter = FeatureTan(self.fbody.body, self.sbody.body)
             file_path = os.path.join(path3, '%s_FL.txt' % (self.body_id))
@@ -605,6 +619,7 @@ class MainUI(QMainWindow):
             outline_exp.export_front(file_path)
             file_path = os.path.join(path3, '%s_SC.txt' % (self.body_id))
             outline_exp.export_side(file_path)
+
         except Exception as e:
             # print(e)
             print(traceback.format_exc())

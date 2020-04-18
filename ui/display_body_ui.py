@@ -43,7 +43,8 @@ class BodyFrame(QFrame):
             self.body = BackBody(self.body_id)
         self.body.process_display_img()
         self.body.load_pre_feature()
-        self.body.calculate_features()
+
+        # self.body.calculate_features()
         img = self.body.get_result_img()
         img = cv2.resize(img,dst_size)
         # img = img[:,:,::-1]

@@ -203,13 +203,50 @@ S胸R:{}
 
 
         # self._map['']='neck_angle' # '侧面脖子角度',
-        features['neck_angle']=0.3
+        # features['neck_angle']=0.3
+        features['neck_angle'] = angle(self.side_body.features['s_neck_up_L'], self.side_body.features['s_neck_up_R'])
         # features['foot_line']=self.front_body.bottom_y - self.front_body.foot_y
         # features['foot_line_s'] = self.side_body.bottom_y - self.side_body.foot_y
         # features['foot_line'] = self.front_body.foot_y + 10
         # features['foot_line_s'] = self.side_body.foot_y + 10
-        features['foot_line'] = 100
-        features['foot_line_s'] = 100
+
+        fbody=self.front_body
+        sbody=self.side_body
+        left_foot,right_foot=None,None
+        # print(fbody.features)
+        if 'left_foot' in fbody.features:
+            left_foot=fbody.features['left_foot']
+        if 'right_foot' in fbody.features:
+            right_foot=fbody.features['right_foot']
+        # print(left_foot,right_foot)
+        left_foot_line,right_foot_line=None,None
+        if left_foot:
+            h=fbody._max_y-left_foot[1]
+            if 50<=h<=150:
+                left_foot_line=h
+        if right_foot:
+            h=fbody._max_y-right_foot[1]
+            if 50 <= h <= 150:
+                right_foot_line=h
+        if left_foot_line or right_foot_line:
+            if not left_foot_line:
+                left_foot_line=150
+            if not right_foot_line:
+                right_foot_line=150
+            foot_line=min(left_foot_line,right_foot_line)
+            # print(foot_line)
+        else:
+            foot_line=100
+        # print(foot_line)
+        f_h=fbody._max_y-fbody._min_y
+        s_h=sbody._max_y-sbody._min_y
+
+        foot_line_s=int(foot_line*(s_h/f_h))
+
+        foot_line=fbody.img_h-(fbody._max_y-foot_line)
+        foot_line_s=sbody.img_h-(sbody._max_y-foot_line_s)
+        features['foot_line'] = foot_line
+        features['foot_line_s'] = foot_line_s
 
         features['deflection'], features['deflection_s']=0,0
         return features

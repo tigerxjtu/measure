@@ -2,6 +2,7 @@ from ui.main import Body,FrontBody,SideBody
 # from common import *
 from train_data import *
 from ui.outline_export import OutlineTan
+from ui.feature_export import FeatureTan
 from model.LinearModel import LinearModel
 
 def get_front_side_points(name):
@@ -14,18 +15,46 @@ def get_front_side_points(name):
     outline_exp = OutlineTan(fbody, sbody)
     return outline_exp.front_points(),outline_exp.side_points()
 
-if __name__ == '__main__':
-    name = names[2]
-    # name = 'U100265219110914553552'
-    name='U1003017200310155454508'
-    print(name)
-    # U100221919090109361146
+def outline_test(name):
     body_id = name
     front_body = FrontBody(body_id)
     side_body = SideBody(body_id)
     #
     front_body.process_img()
     side_body.process_img()
+
+    outline_exp = OutlineTan(front_body, side_body)
+    file_path = os.path.join(path3, '%s_FC.txt' % (body_id))
+    outline_exp.export_front(file_path)
+    file_path = os.path.join(path3, '%s_SC.txt' % (body_id))
+    outline_exp.export_side(file_path)
+
+def feature_test(name):
+    body_id = name
+    l_model = LinearModel()
+    fbody = l_model.get_body(body_id, 'F')
+    sbody = l_model.get_body(body_id, 'S')
+    fbody.load_export_features()
+    sbody.load_export_features()
+    exporter = FeatureTan(fbody, sbody)
+    features = exporter.export_features()
+
+if __name__ == '__main__':
+
+    # name = 'U100265219110914553552'
+    # name='U1003017200310155454508'
+    name = names[0]
+    print(name)
+    # U100221919090109361146
+    # body_id = name
+    # front_body = FrontBody(body_id)
+    # side_body = SideBody(body_id)
+    # #
+    # front_body.process_img()
+    # side_body.process_img()
+    feature_test(name)
+
+
     #
     # file_path = os.path.join(path3, '%s%s.json' % (body_id, front_body.tag))
     # with open(file_path, 'w') as fp:
@@ -43,9 +72,11 @@ if __name__ == '__main__':
     # if not os.path.exists(base_path):
     #     os.mkdir(base_path)
 
-    outline_exp = OutlineTan(front_body, side_body)
-    file_path = os.path.join(path3, '%s_FC.txt' % (body_id))
-    outline_exp.export_front(file_path)
+    # outline_exp = OutlineTan(front_body, side_body)
+    # file_path = os.path.join(path3, '%s_FC.txt' % (body_id))
+    # outline_exp.export_front(file_path)
+    # file_path = os.path.join(path3, '%s_SC.txt' % (body_id))
+    # outline_exp.export_side(file_path)
 
 
     # file_path = os.path.join(path3, '%s_SC.txt' % (body_id))

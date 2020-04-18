@@ -1,5 +1,7 @@
 import json
 import os
+
+from BodyClient import body_client
 from Config import config
 from NoBodyException import NoBodyException
 
@@ -44,15 +46,26 @@ def list_pic_files(path):
 
 #获取特征文件对应的轮廓点或特征点
 def get_points(file):
-    with open(file) as f:
-        content = f.read()
-        data = json.loads(content)
-        points = data['featureXY']
-        if not points:
-            raise NoBodyException('no outline points in file %s' % file)
-        width = data['width']
-        height = data['height']
-        return width, height, [(int(p['x']), int(p['y'])) for p in points]
+    try:
+        with open(file) as f:
+            content = f.read()
+            data = json.loads(content)
+            points = data['featureXY']
+            if not points:
+                raise NoBodyException('no outline points in file %s' % file)
+            width = data['width']
+            height = data['height']
+            return width, height, [(int(p['x']), int(p['y'])) for p in points]
+    except Exception as e:
+        print(e)
+        print(file)
+
+def save_outline(pic_file,txt_file):
+    points,width,height=body_client.body_seg(pic_file)
+    pts=[dict(x=p[0], y=p[1]) for p in points]
+    points=dict(width=width,height=height,featureXY=pts)
+    with open(txt_file, 'w') as fp:
+        json.dump(points, fp)
 
 # names=list_name(path1)
 # pics=list_pic_files(path2)

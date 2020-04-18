@@ -23,6 +23,9 @@ def angle(p1,p2):
     x2, y2 = p2
     return -(y2-y1)/(x2-x1)
 
+def is_same(pt1, pt2):
+    return pt1[0] == pt2[0] and pt1[1] == pt2[1]
+
 #判断三点是否共线
 def is_one_line(left_point,right_point,cur_point):
     left_x, left_y = left_point
