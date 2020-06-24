@@ -270,6 +270,7 @@ def feature_by_min(outline, lower_pct, upper_pct, top_y, bottom_y):
     return min_angle_feature(outline, lower_pct, upper_pct, top_y, bottom_y, angle=0.3)
 
 
+#求left_points曲线和right_points曲线之间的最短距离和对应的点
 def points_from_min_distance(left_points, right_points):
     min_distances = []
     pairs = [(pt1, pt2) for pt1 in left_points for pt2 in right_points]

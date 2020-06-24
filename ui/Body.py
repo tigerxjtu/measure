@@ -160,6 +160,18 @@ class Body(object):
         p = max(self.outline, key=lambda x: x[1])
         self._max_y = p[1]
 
+    def get_feature_dir(self):
+        if self.folder:
+            return os.path.join(path1, self.folder)
+        else:
+            return path1
+
+    def get_pic_dir(self):
+        if self.folder:
+            return os.path.join(path2, self.folder)
+        else:
+            return path2
+
     def load_pre_feature(self):
         try:
             if self.folder:
@@ -176,7 +188,10 @@ class Body(object):
             else:
                 out_file = os.path.join(path1, '%s%s1.json' % (self.body_id, self.tag))
             with open(out_file, 'r') as fp:
-                self.bdfeatureXY = json.load(fp)
+                try:
+                    self.bdfeatureXY = json.load(fp)
+                except:
+                    self.bdfeatureXY = body_client.body_points(self.img_file)
         except Exception as e:
             print(e)
             print('load pre feature fails:', self.body_id)
@@ -235,6 +250,21 @@ class Body(object):
                     self.left_finger = all_features['finger_left']
                     self.right_finger = all_features['finger_right']
                     self.huiyin_point = all_features['huiyin_point']
+
+    def export_img(self,pt,filename,up_margin=10, margin=50):
+        img = cv2.imread(self.img_file)
+        x,y=pt
+        left_x,left_y=x-margin,y-up_margin
+        right_x,right_y=x+margin+1,y+margin+1
+        img_range=dict(range=[left_x,left_y,right_x,right_y], point=pt)
+        file='%s.json'%filename
+        with open(file,'w') as fp:
+            json.dump(img_range,fp)
+        file='%s.jpg'%filename
+        range_img=img[left_y:right_y,left_x:right_x]
+        cv2.imwrite(file,range_img)
+        return range_img,img_range
+
 
     def process_img(self):
         self.load_file()

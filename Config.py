@@ -63,10 +63,15 @@ class Config(object):
         # self.result_dir = r'C:\projects\python\data\measure\202001\result'
         # self.data_dir = r'C:\projects\python\data\measure\202001'
 
-        self.pic_dir = r'C:\projects\python\data\measure\202003\pics'
-        self.txt_dir = r'C:\projects\python\data\measure\202003\txtdata'
-        self.result_dir = r'C:\projects\python\data\measure\202003\result'
-        self.data_dir = r'C:\projects\python\data\measure\202003'
+        # self.pic_dir = r'C:\projects\python\data\measure\202003\pics'
+        # self.txt_dir = r'C:\projects\python\data\measure\202003\txtdata'
+        # self.result_dir = r'C:\projects\python\data\measure\202003\result'
+        # self.data_dir = r'C:\projects\python\data\measure\202003'
+
+        self.pic_dir = r'C:\projects\python\data\measure\202005\pics'
+        self.txt_dir = r'C:\projects\python\data\measure\202005\txtdata'
+        self.result_dir = r'C:\projects\python\data\measure\202005\result'
+        self.data_dir = r'C:\projects\python\data\measure\202005'
 
         # self.pic_dir = r'C:\projects\python\tan_client\pics'
         # self.txt_dir = r'C:\projects\python\tan_client\txtdata'

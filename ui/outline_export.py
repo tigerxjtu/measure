@@ -103,6 +103,8 @@ class OutlineTransformer(object):
         return left_curve
 
     def process_row(self, points, leaf_curves):
+        if not points:
+            return leaf_curves
         temp_points = []
         prev_point = points[0]
         cur_y = prev_point[1]

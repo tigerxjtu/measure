@@ -592,6 +592,18 @@ class MainUI(QMainWindow):
         #     # print(e)
         #     print(traceback.format_exc())
         # return
+        try:
+            fbody=self.fbody.body
+            sbody=self.sbody.body
+            fptl,fptr=fbody.auto_features['yao_L'],fbody.auto_features['yao_R']
+            fbody.export_img(fptl,'f_yao_L')
+            fbody.export_img(fptr,'f_yao_R')
+            sptl,sptr=sbody.auto_features['yao_L'],sbody.auto_features['yao_R']
+            sbody.export_img(sptl, 's_yao_L')
+            sbody.export_img(sptr, 's_yao_R')
+        except:
+            print(traceback.format_exc())
+        return
 
         try:
             exporter = FeatureTan(self.fbody.body, self.sbody.body)
